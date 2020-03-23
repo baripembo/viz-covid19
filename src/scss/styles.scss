@@ -10,47 +10,87 @@
 }
 
 body {
-  background-color: #191a1a;
+  background-color: #B7C3D0;
   color: #FFF;
-	font-family: 'PT Sans', sans-serif;
+	font-family: 'Source Sans Pro', sans-serif;
   font-size: 14px;
   line-height: 20px;
 	margin: 0;
 	padding: 0;
 }
 
-footer {
-  background-color: #FFF;
-	padding: 20px;
-}
-
-main,
-footer {
+main {
   opacity: 0;
   transition: 0.5s all ease;
 }
 
-.logos {
+header {
+	align-items: center;
+	background-color: #FFF;
+	border-bottom: 1px solid #CCC;
+	color: #000;
 	display: flex;
-	justify-content: flex-end;
+	flex-flow: row;
+	height: 52px;
+	padding: 0 20px;
+	position: fixed;
+	top: 0;
+	width: 100%;
+	z-index: 2;
+}
+
+h1 {
+	font-size: 22px;
+	margin: 0;
+}
+
+ul {
+	margin: 0;
+	&.horizontal {
+		list-style-type: none;
+		display: flex;
+	}
+}
+
+.label-header {
+	display: block;
+	font-weight: 700;
+	margin: 0;
+	padding-bottom: 0;
+	text-transform: uppercase;
+}
+
+.date {
+	color: #999;
+	font-size: 12px;
+	padding: 6px 10px 0;
+}
+
+.content {
+	margin-top: 52px;
+	position: relative;
+}
+
+.logos {
+	margin-left: auto;
 	img {
-		margin-right: 40px;
+		margin-left: 40px;
 		margin-bottom: 0;
-		vertical-align: top;
+		vertical-align: middle;
 		width: auto;
 	}
 }
 
 #map{
+	fill: #B7C3D0;
   position: relative;
   .map-regions{
-    //fill: #343332;
-    stroke: #6d6d6d;
+    stroke: #FFF;
     cursor: pointer;
   }
   .zoom-controls {
     position: absolute;
-    right: 45px;
+    left: 45px;
     bottom: 45px;
     display: grid;
     grid-gap: 5px;  
@@ -60,15 +100,15 @@ footer {
       font-size: 18px;
       display: grid;
       border-radius: 50% !important;
-      background: #007ce1;
-      color: #FFF;
+      background: #FFF;
+      color: #000;
       border: none;
       user-select: none;
       cursor: pointer;
       box-sizing: border-box;
     }
     button:active {
-      background: rgba(200, 200, 200, 0.8);
+      background: rgba(255, 255, 255, 0.8);
     }
     button:focus {
       outline: 0;
@@ -81,6 +121,13 @@ footer {
   font-size: 12px;
   pointer-events: none;
   text-anchor: middle;
+  width: 100px;
+}
+
+.count-marker{
+  fill-opacity: 0.5;
+  fill: #00acee;
+  stroke: #0a95ca;
 }
 
 .tooltip{
@@ -96,7 +143,7 @@ footer {
   pointer-events: none;
   position: absolute;
   transition: 0.3s opacity ease;
-  width: 105px;
+  width: 120px;
   z-index: 100;
   &:after {
     border-color: rgba(136, 183, 213, 0);
@@ -117,34 +164,17 @@ footer {
   }
 }
 
-.modal {
+.panel {
 	background-color: #FFF;
-	border-radius: 8px;
-	box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-	color: #000;
-	display: none;
-	padding: 20px;
+	height: 100%;
+	opacity: 0.8;
+	overflow: scroll;
 	position: absolute;
-	width: 600px;
-	height: 400px;
-	top: 50%;
-	left: 50%;
-	transform: translate(-50%, -50%);
-	.close-button {
-		border: 0;
-		cursor: pointer;
-		position: absolute;
-		top: 20px;
-		right: 20px;
-    font-size: 24px;
-    font-weight: bold;
-    line-height: 1;
-    color: #000;
-    text-shadow: 0 1px 0 #fff;
-    opacity: 0.3;
-    &:hover {
-    	opacity: 0.6;
-    }
+	right: 0;
+	top: 0;
+	width: 40%;
+	.panel-inner {
+		padding: 20px;
 	}
 }
 
@@ -166,14 +196,18 @@ footer {
 	}
 }
 
+.indicator-chart {
+	margin-top: 20px;
+}
+
+.c3-title {
+  font: 11px sans-serif;
+  font-weight: bold;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+}
+
+
 @media only screen and (max-width: 767px) {
-	.logos {
-		.grid-container > div {
-			padding: 0;
-			text-align: center;
-		}
-		img {
-			margin: 10px;
-		}
-	}
+
 }

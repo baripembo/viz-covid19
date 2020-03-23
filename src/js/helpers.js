@@ -25,3 +25,8 @@ function hxlProxyToJSON(input){
     });
     return output;
 }
+
+function getMonth(m) {
+    var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return months[m];
+}

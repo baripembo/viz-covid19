@@ -14,13 +14,13 @@ var countryList = [
     "Myanmar",
     "Niger",
     "Nigeria",
-    "Occupied Palestinian Territory",
+    "occupied Palestinian territory",
     "Somalia",
     "South Sudan",
     "Sudan",
     "Syria",
     "Ukraine",
-    "Venezuela",
+    "Venezuela (Bolivarian Republic of)",
     "Yemen"
 ];
 
