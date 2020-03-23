@@ -7,7 +7,7 @@ $( document ).ready(function() {
   var geomData, geomFilteredData, whoFilteredData, indicatorData, timeseriesData, date = '';
 
   var viewportWidth = window.innerWidth;
-  var viewportHeight = window.innerHeight - $('header').height();
+  var viewportHeight = window.innerHeight - $('header').outerHeight();
   var tooltip = d3.select(".tooltip");
 
   function getData() {
@@ -34,14 +34,17 @@ $( document ).ready(function() {
       timeseriesData = data[3];
     
       //set last updated date
-      date = new Date(whoFilteredData[0].DateOfReport);
-      $('.date').find('span').html(getMonth(date.getMonth()) + ' ' + date.getUTCDate() + ', ' + date.getFullYear());
-      $('.panel').css('height', viewportHeight);
+      var d = new Date(whoFilteredData[0].DateOfReport);
+      date = getMonth(d.getMonth()) + ' ' + d.getUTCDate() + ', ' + d.getFullYear();
+      $('.date').html(date);
+      
+      //set heights
+      $('.content').css('margin-top', $('header').outerHeight());
 
       //create vis elements
       initMap();
-      initKeyFigures();
-      initBarCharts(indicatorData);
+      initPanel();
+      //initBarCharts(indicatorData);
       initTimeseries(timeseriesData);
 
       //remove loader and show vis
@@ -50,35 +53,39 @@ $( document ).ready(function() {
     });
   }
 
-  function initKeyFigures() {
+  function initPanel() {
+    $('.panel').css('height', viewportHeight);
+
+    $('.panel').find('h2 a').on('click', function() {
+      resetPanel();
+    });
+
     var totalCases = d3.sum(whoFilteredData, function(d) { return d.cum_conf; });
     var totalDeaths = d3.sum(whoFilteredData, function(d) { return d.cum_death; });
+    createKeyFigure('Number of confirmed cases', 'cases', totalCases);
+    createKeyFigure('Number of deaths', 'deaths', totalDeaths);
+  }
 
-    $('.key-figures').append('<div class="key-figure"><span>'+ whoFilteredData.length +'</span><br/>countries</div>');
-    $('.key-figures').append('<div class="key-figure"><span>'+ totalCases +'</span><br/>confirmed cases</div>');
-    $('.key-figures').append('<div class="key-figure"><span>'+ totalDeaths +'</span><br/>deaths</div>');
+  function createKeyFigure(title, className, value) {
+    return $('.stats').append("<div class='key-figure'><div class='inner'><h3>"+ title +"</h3><div class='num " + className + "'>"+ value +"</div><p class='date small'>"+ date +"</p></div></div></div>");
   }
 
   function initMap(){
     drawMap();
-
-    $('.close-button').on('click', function() {
-      $('.modal').hide();
-    });
   }
 
-  var width, height, zoom, g, projection, rlog;
+  var width, height, zoom, g, projection, markerScale;
   function drawMap(){
     width = viewportWidth;
     height = viewportHeight;
-    var mapScale = width/5.5;
-    var mapCenter = [70, 15];
+    var mapScale = width/5.2;
+    var mapCenter = [60, 0];
 
     var max = d3.max(whoFilteredData, function(d) { return d.cum_conf; } );
-    var step = max/3;
-    var color = d3.scaleQuantize()
-      .domain([0, step, step*2, step*3])
-      .range(d3.schemeReds[4]);
+    // var step = max/3;
+    // var color = d3.scaleQuantize()
+    //   .domain([0, step, step*2, step*3])
+    //   .range(d3.schemeReds[4]);
 
     projection = d3.geoMercator()
       .center(mapCenter)
@@ -103,9 +110,9 @@ $( document ).ready(function() {
       .attr("height", "100%")
 
     //create log scale for circle markers
-    rlog = d3.scaleLog()
+    markerScale = d3.scaleSqrt()
       .domain([1, max])
-      .range([2, 20]);
+      .range([4, 20]);
         
     //draw map
     g = mapsvg.append("g");
@@ -114,12 +121,12 @@ $( document ).ready(function() {
     .enter()
       .append("path")
       .attr("class", "map-regions")
-      .attr("fill", function(d) { 
-        var country = whoFilteredData.filter(country => country.ADM0_NAME == d.properties.NAME_LONG);
-        var num = (country[0] != undefined) ? country[0].cum_conf : -1;
-        var clr = (num<0) ? '#E8E8E8' : color(num);
-        return clr;
-      })
+      // .attr("fill", function(d) { 
+      //   var country = whoFilteredData.filter(country => country.ADM0_NAME == d.properties.NAME_LONG);
+      //   var num = (country[0] != undefined) ? country[0].cum_conf : -1;
+      //   var clr = (num<0) ? '#E8E8E8' : color(num);
+      //   return clr;
+      // })
       .attr("d", path)
       .on("mouseover", function(d){ 
         var included = false;
@@ -141,12 +148,8 @@ $( document ).ready(function() {
         }
       })
       .on("click", function(d) {
-        // var country = whoFilteredData.filter(country => country.ADM0_NAME == d.properties.NAME_LONG);
-        // if (countryData != undefined) {
-        //   $('.modal').find('h3').html(country[0].ADM0_NAME);
-        //   $('.modal').find('p').html(country[0].cum_conf + " confirmed cases<br/>"+country[0].cum_death+" deaths");
-        //   $('.modal').show();
-        // }
+        var country = whoFilteredData.filter(country => country.ADM0_NAME == d.properties.NAME_LONG);
+        updatePanel(country[0]);
       });
 
     //country labels
@@ -167,12 +170,15 @@ $( document ).ready(function() {
         .append("g")
         .append("circle")
         .attr("class", "marker count-marker")
-        .attr("r", function (d){ return (d.cum_conf==0) ? 0 : rlog(d.cum_conf); })
+        .attr("r", function (d){ return (d.cum_conf==0) ? 0 : markerScale(d.cum_conf); })
         .attr("transform", function(d){ return "translate(" + projection([d.CENTER_LON, d.CENTER_LAT]) + ")"; })
         .on("mouseover", function(){ tooltip.style("opacity", 1); })
         .on("mouseout", function(){ tooltip.style("opacity", 0); })
         .on("mousemove", function(d) {
           createMapTooltip(d.ADM0_NAME, d.ADM0_NAME);
+        })
+        .on("click", function(d) {
+          updatePanel(d);
         });
 
     //tooltip
@@ -195,7 +201,7 @@ $( document ).ready(function() {
 
     var w = $('.tooltip').outerWidth();
     var h = $('.tooltip-inner').outerHeight() + 20;
-    tooltip.select('div').html("<label class='label-header'>" + country_name + "</label>Cases: "+ cases +"<br/>Deaths: "+ deaths +"<br/>");
+    tooltip.select('div').html("<label class='h3 label-header'>" + country_name + "</label>Cases: "+ cases +"<br/>Deaths: "+ deaths +"<br/>");
     tooltip
       .style('height', h + 'px')
       .style('left', (d3.event.pageX - w/2) + 'px')
@@ -215,6 +221,22 @@ $( document ).ready(function() {
       mapsvg.selectAll('.country-label')
         .style('font-size', function(d) { return 12/transform.k+'px'; });
     }
+  }
+
+  function updatePanel(country) {
+    if (country != undefined) {
+      $('.panel').find('h2 span').html(' > ' + country.ADM0_NAME);
+      $('.key-figure').find('.cases').html(country.cum_conf);
+      $('.key-figure').find('.deaths').html(country.cum_death);
+    }
+  }
+
+  function resetPanel() {
+    var totalCases = d3.sum(whoFilteredData, function(d) { return d.cum_conf; });
+    var totalDeaths = d3.sum(whoFilteredData, function(d) { return d.cum_death; });
+    $('.panel').find('h2 span').html('');
+    $('.key-figure').find('.cases').html(totalCases);
+    $('.key-figure').find('.deaths').html(totalDeaths);
   }
 
   function initTracking() {

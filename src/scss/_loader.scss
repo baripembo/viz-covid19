@@ -1,5 +1,5 @@
 .loader {
-	color: #FFF;
+	color: #000;
 	font-size: 11px;
 	text-align: center;
 	position: absolute;
@@ -17,8 +17,8 @@
 
 /* Spinner Circle Rotation */
 .sp-circle {
-	border: 4px rgba(255,255,255,0.25) solid;
-	border-top: 4px rgba(255,255,255,1) solid;
+	border: 4px rgba(0,0,0,0.25) solid;
+	border-top: 4px rgba(0,0,0,1) solid;
 	border-radius: 50%;
 	-webkit-animation: spCircRot .6s infinite linear;
 	animation: spCircRot .6s infinite linear;

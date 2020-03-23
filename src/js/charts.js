@@ -91,6 +91,10 @@ function initTimeseries(data) {
 function createTimeSeries(array) {
 	var chart = c3.generate({
     bindto: '.timeseries-chart',
+    title: {
+  		text: 'Number of Confirmed Cases Over Time',
+  		position: 'upper-left'
+		},
 		data: {
 			x: 'x',
 			columns: array
@@ -99,7 +103,7 @@ function createTimeSeries(array) {
 			x: {
 				type: 'timeseries',
 				tick: {
-				  format: '%m-%d-%Y'
+				  format: '%-m/%-d/%y'
 				}
 			}
 		}
