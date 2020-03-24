@@ -2,17 +2,17 @@
 <html>
   <head>
     <meta charset='utf-8' />
-    <title>COVID-19 Dashboard</title>
+    <title>COVID-19 Pandemic in Locations with a Humanitarian Response</title>
     <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
     <link rel='icon' type='image/png' href='https://data.humdata.org/images/icons/hdx.ico' />
     <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro&display=swap" rel="stylesheet">
-    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/c3/0.7.11/c3.min.css"/>
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/c3/0.7.15/c3.min.css"/>
     <link href='css/styles.css' rel='stylesheet' />
     <script src="https://d3js.org/d3.v5.js"></script>
     <script src="//d3js.org/topojson.v1.min.js"></script>
     <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
     <script src="https://d3js.org/d3-geo-projection.v2.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/c3/0.7.11/c3.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/c3/0.7.15/c3.min.js"></script>
   </head>
 
   <body>
@@ -24,22 +24,8 @@
 
     <main>
       <header>
-        <div>
-          <h1>COVID-19 Pandemic in Humanitarian Response Plan Countries <span>Last updated: <div class='small date'></div></span></h1>
-          <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
-        </div>
-        <ul class='horizontal logos'>
-          <li>
-            <a href='https://www.unocha.org' target='_blank'>
-              <img height='30' src='assets/logo-ocha-gray.png'>
-            </a>
-          </li>
-          <li>
-            <a href='https://centre.humdata.org' target='_blank'>
-              <img height='38' src='assets/logo-centre-gray.png'>
-            </a>
-          </li>
-        </div>
+          <h1>COVID-19 Pandemic in Locations with a Humanitarian Response</h1>
+          <p>The following visual shows the number of confirmed cases and deaths from the coronavirus disease (COVID-19) in locations with Humanitarian Response Plans (HRPs) or other type of response plan. The COVID-19 data is sourced from the World Health Organization (WHO). The countries include Afghanistan, Burkina Faso, Burundi, Cameroon, Сentral African Republic, Chad, Democratic Republic of the Congo, Ethiopia, Haiti, Iraq, Libya, Mali, Myanmar, Niger, Nigeria, occupied Palestinian territory, Somalia, South Sudan, Sudan, Syria, Ukraine, Venezuela and Yemen. More countries will be added as needed.</p>
       </header>
       
       <div class='content'>
@@ -50,19 +36,22 @@
           </div>
           <div class='map-legend'>
             <div class='legend-inner'>
-              MAP LEGEND
+              <h3>Map Legend</h3>
             </div>
           </div>
         </div>
+      </div>
 
-        <div class='panel'>
-          <!-- <button type="button" class="close-button">×</button> -->
-          <div class='panel-inner'>
-            <h2><a href='#'>HRP Countries</a><span></span></h2>
-            <div class='stats'></div>
-            <div class='timeseries-chart'></div>
-            <div class='indicator-charts'></div>
-          </div>
+      <div class='panel'>
+        <div class='panel-inner'>
+          <h2>Global</h2>
+          <div class='stats stats-global'></div>
+
+          <h2><a href='#'>Humanitarian Response Locations</a><span></span></h2>
+          <div class='stats stats-priority'></div>
+
+          <div class='timeseries-chart'></div>
+          <div class='indicator-charts'></div>
         </div>
       </div>
       

@@ -60,9 +60,10 @@ function createBarChart(name, countries, values) {
 function initTimeseries(data) {
 	//group the data by country
   var groupByCountry = d3.nest()
-    .key(function(d){ return d['Country Code']; })
+    .key(function(d){ return d['Country']; })
     .key(function(d) { return d['Date']; })
     .entries(data);
+  groupByCountry.sort(compare);
 
   //group the data by date
   var groupByDate = d3.nest()
@@ -79,33 +80,57 @@ function initTimeseries(data) {
 
   groupByCountry.forEach(function(country, index) {
   	var arr = [country.key];
-  	country.values.forEach(function(item) {
-  		arr.push(item.values[0]['Cases']);
-  	});
+  	var val = 0;
+		groupByDate.forEach(function(d) {
+			country.values.forEach(function(e) {
+				if (d.key == e.key) {
+					val = e.values[0]['confirmed cases'];
+				}
+			});
+			arr.push(val);
+		});
   	timeseriesArray.push(arr);
   });
 
   createTimeSeries(timeseriesArray)
 }
 
+var timeseriesChart;
 function createTimeSeries(array) {
-	var chart = c3.generate({
+	timeseriesChart = c3.generate({
+    padding: {
+      top: 20,
+      left: 25,
+    },
     bindto: '.timeseries-chart',
     title: {
   		text: 'Number of Confirmed Cases Over Time',
-  		position: 'upper-left'
+  		position: 'upper-left',
 		},
 		data: {
 			x: 'x',
 			columns: array
 		},
+    point: {
+      show: false
+    },
 		axis: {
 			x: {
 				type: 'timeseries',
 				tick: {
 				  format: '%-m/%-d/%y'
 				}
+			},
+			y: {
+				min: 0,
+				padding: { top:0, bottom:0 }
 			}
-		}
+		},
+		tooltip: {
+  		grouped: false
+		},
+    transition: {
+      duration: 100
+    }
 	});
 }
