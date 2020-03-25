@@ -5,7 +5,7 @@ $( document ).ready(function() {
   var cumulativePath = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS23DBKc8c39Aq55zekL0GCu4I6IVnK4axkd05N6jUBmeJe9wA69s3CmMUiIvAmPdGtZPBd-cLS9YwS/pub?gid=195339920&single=true&output=csv';
   var geomData, geomFilteredData, globalData, cumulativeData, timeseriesData, date, totalCases, totalDeaths = '';
   var countryCodeList = [];
-  var numFormat = d3.format(".2s");
+  var numFormat = d3.format(",");
 
   var viewportWidth = window.innerWidth;
   var viewportHeight = $('main').outerHeight() - $('header').outerHeight();//window.innerHeight - $('header').outerHeight();
@@ -115,7 +115,7 @@ $( document ).ready(function() {
     width = viewportWidth;
     height = viewportHeight;
     var mapScale = width/5.5;
-    var mapCenter = [75, 0];
+    var mapCenter = [75, 8];
 
     var max = d3.max(cumulativeData, function(d) { return +d['confirmed cases']; } );
     // var step = max/3;
