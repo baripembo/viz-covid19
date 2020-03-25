@@ -17,7 +17,7 @@ body {
   font-size: 12px;
   line-height: 18px;
 	margin: 0;
-  overflow: hidden;
+  oveflow: hidden;
 	padding: 0;
 }
 
@@ -90,13 +90,26 @@ header {
   }
 }
 
+.content {
+  display: flex;
+  flex-flow: row;
+  position: relative;
+  .content-left {
+    position: relative;
+    width: 60%;
+  }
+  .content-right {
+    width: 40%;
+  }
+}
+
 .description {
   background-color: rgba(255, 255, 255, 0.5);
   bottom: 0;
   color: #888;
   padding: 20px;
   position: absolute;
-	width: 60%;
+  width: 100%;
   p {
     margin: 0;
   }
@@ -109,12 +122,7 @@ header {
 
 .panel {
 	background-color: #FFF;
-	height: 100%;
-	overflow: hidden;
-	position: absolute;
-	right: 0;
-	top: 0;
-	width: 40%;
+  z-index: 2;
 	.panel-inner {
 		padding: 20px;
 	}
@@ -169,10 +177,6 @@ header {
 	padding-bottom: 20px;
 }
 
-.content {
-	position: relative;
-}
-
 .logos {
 	margin-left: auto;
 	img {
@@ -225,7 +229,7 @@ header {
   	opacity: 0.8;
   	position: absolute;
   	left: 20px;
-  	width: 160px;
+  	width: 110px;
   	.legend-inner {
   		padding: 0 10px 10px;
   	}
@@ -233,6 +237,9 @@ header {
   		fill: #000;
   		font-size: 12px;
   	}
+    h3 {
+      font-size: 12px;
+    }
   }
 }
 
@@ -258,11 +265,12 @@ header {
   color: #000;
   font-size: 14px;
   line-height: 18px;
-  height: 100px;
+  height: 80px;
   opacity: 0;
   padding: 10px;
   pointer-events: none;
   position: absolute;
+  top: 0;
   transition: 0.3s opacity ease;
   width: 130px;
   z-index: 100;
@@ -298,5 +306,54 @@ header {
 
 
 @media only screen and (max-width: 767px) {
-
+  body {
+    overflow: auto;
+  }
+  h1 {
+    line-height: 18px;
+    padding-left: 0;
+  }
+  header {
+    align-items: flex-start;
+    flex-flow: column;
+    margin-top: 0;
+    padding: 10px;
+    .date {
+      padding: 5px 0 0;
+    }
+  }
+  .content {
+    flex-flow: column;
+    .content-left,
+    .content-right {
+      width: 100%;
+    }
+  }
+  .description {
+    width: 100%;
+  }
+  .panel {
+    .panel-inner {
+      padding: 10px;
+    }
+  }
+  #map {
+    .map-legend {
+      left: 10px;
+      top: 10px;
+    }
+    .zoom-controls {
+      left: auto;
+      right: 10px;
+      top: 10px;
+      grid-gap: 0;
+      button {
+        border-radius: 0 !important;
+        &#zoom_in {
+          border-bottom: 1px solid #CCC;
+          height: 31px;
+        }
+      }
+    }
+  }
 }
