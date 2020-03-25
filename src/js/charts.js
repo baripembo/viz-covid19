@@ -72,7 +72,9 @@ function initTimeseries(data) {
 
   var dateArray = ['x'];
   groupByDate.forEach(function(d) {
-  	dateArray.push(new Date(d.key));
+    var date = new Date(d.key);
+    var utcDate = new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
+  	dateArray.push(utcDate);
   });
 
   var timeseriesArray = [];
@@ -99,8 +101,8 @@ var timeseriesChart;
 function createTimeSeries(array) {
 	timeseriesChart = c3.generate({
     padding: {
-      top: 20,
-      left: 25,
+      top: 15,
+      left: 30,
       right: 20
     },
     bindto: '.timeseries-chart',

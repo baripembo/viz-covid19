@@ -40,7 +40,7 @@ $( document ).ready(function() {
       //set last updated date
       var d = new Date(cumulativeData[0].last_updated);
       date = getMonth(d.getMonth()) + ' ' + d.getUTCDate() + ', ' + d.getFullYear();
-      $('.date').html(date);
+      $('.date span').html(date);
 
       //create vis elements
       initPanel();
@@ -69,7 +69,7 @@ $( document ).ready(function() {
 
   function createKeyFigure(target, title, className, value) {
     var targetDiv = $(target);
-    return targetDiv.append("<div class='key-figure'><div class='inner'><h3>"+ title +"</h3><div class='num " + className + "'>"+ value +"</div><p class='date small'>"+ date +"</p></div></div></div>");
+    return targetDiv.append("<div class='key-figure'><div class='inner'><h3>"+ title +"</h3><div class='num " + className + "'>"+ value +"</div><p class='date small'><span>"+ date +"</span></p></div></div></div>");
   }
 
   function initMap(){
