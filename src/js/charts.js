@@ -101,6 +101,7 @@ function createTimeSeries(array) {
     padding: {
       top: 20,
       left: 25,
+      right: 20
     },
     bindto: '.timeseries-chart',
     title: {
@@ -109,28 +110,33 @@ function createTimeSeries(array) {
 		},
 		data: {
 			x: 'x',
-			columns: array
+			columns: array,
+      type: 'spline'
 		},
-    point: {
-      show: false
+    spline: {
+      interpolation: {
+        type: 'basis'
+      }
     },
+    point: { show: false },
 		axis: {
 			x: {
 				type: 'timeseries',
 				tick: {
-				  format: '%-m/%-d/%y'
+          count: 8,
+				  format: '%-m/%-d/%y',
+          outer: false
 				}
 			},
 			y: {
 				min: 0,
-				padding: { top:0, bottom:0 }
+				padding: { top:0, bottom:0 },
+        tick: { 
+          outer: false
+        }
 			}
 		},
-		tooltip: {
-  		grouped: false
-		},
-    transition: {
-      duration: 100
-    }
+		tooltip: { grouped: false },
+    transition: { duration: 100 }
 	});
 }
