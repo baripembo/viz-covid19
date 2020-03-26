@@ -7,6 +7,7 @@ $( document ).ready(function() {
   var countryCodeList = [];
   var numFormat = d3.format(",");
 
+  var page = window.location.href;
   var viewportWidth = window.innerWidth;
   var viewportHeight = $('main').outerHeight() - $('header').outerHeight();
   var tooltip = d3.select(".tooltip");
@@ -37,10 +38,25 @@ $( document ).ready(function() {
       //filter for priority countries
       geomFilteredData = geomData.features.filter((country) => countryCodeList.includes(country.properties.ISO_A3));
     
+      //get most recent date from timeseries data
+      var lastUpdated = new Date(Math.max.apply(null, timeseriesData.map(function(e) {
+        return new Date(e.Date);
+      })));
+
       //set last updated date
-      var d = new Date(cumulativeData[0].last_updated);
-      date = getMonth(d.getMonth()) + ' ' + d.getUTCDate() + ', ' + d.getFullYear();
+      date = getMonth(lastUpdated.getMonth()) + ' ' + lastUpdated.getUTCDate() + ', ' + lastUpdated.getFullYear();
       $('.date span').html(date);
+
+      //create page link
+      var embed = { text: 'See COVID-19 Pandemic page', link: 'https://data.humdata.org/event/covid-19' };
+      var standalone = { text: 'Open fullscreen', link: 'https://data.humdata.org/visualization/covid19' };
+      if (page.indexOf('visualization') > -1 || page.indexOf('127') > -1) { 
+        $('body').addClass('standalone');
+        createLink(embed);
+      }
+      else {
+        createLink(standalone);
+      }
 
       //create vis elements
       initPanel();
@@ -51,6 +67,11 @@ $( document ).ready(function() {
       $('.loader').hide();
       $('main, footer').css('opacity', 1);
     });
+  }
+
+  function createLink(type) {
+    $('.link').find('a').attr('href', type.link);
+    $('.link').find('span').html(type.text);
   }
 
   function initPanel() {
@@ -124,10 +145,10 @@ $( document ).ready(function() {
       .text(max);
   }
 
-  var width, height, zoom, g, projection, markerScale;
+  var zoom, g, mapsvg, markerScale;
   function drawMap(){
-    width = viewportWidth;
-    height = (isMobile) ? viewportHeight * .5 : viewportHeight;
+    var width = viewportWidth;
+    var height = (isMobile) ? viewportHeight * .5 : viewportHeight;
     var mapScale = (isMobile) ? width/3.5 : width/5.5;
     var mapCenter = (isMobile) ? [10, 30] : [75, 8];
 
@@ -137,7 +158,7 @@ $( document ).ready(function() {
     //   .domain([0, step, step*2, step*3])
     //   .range(d3.schemeReds[4]);
 
-    projection = d3.geoMercator()
+    var projection = d3.geoMercator()
       .center(mapCenter)
       .scale(mapScale)
       .translate([width / 2, height / 2]);
@@ -146,7 +167,7 @@ $( document ).ready(function() {
       .scaleExtent([1, 8])
       .on("zoom", zoomed);
 
-    path = d3.geoPath().projection(projection);
+    var path = d3.geoPath().projection(projection);
 
     mapsvg = d3.select('#map').append('svg')
       .attr("width", width)
@@ -314,7 +335,7 @@ $( document ).ready(function() {
 
   function initTracking() {
     //initialize mixpanel
-    let MIXPANEL_TOKEN = '';
+    let MIXPANEL_TOKEN = window.location.hostname==='data.humdata.org'? '5cbf12bc9984628fb2c55a49daf32e74' : '99035923ee0a67880e6c05ab92b6cbc0';
     mixpanel.init(MIXPANEL_TOKEN);
     mixpanel.track('page view', {
       'page title': document.title,
@@ -323,5 +344,5 @@ $( document ).ready(function() {
   }
 
   getData();
-  //initTracking();
+  initTracking();
 });

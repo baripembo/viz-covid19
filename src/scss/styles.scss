@@ -17,8 +17,14 @@ body {
   font-size: 12px;
   line-height: 18px;
 	margin: 0;
-  oveflow: hidden;
+  overflow: hidden;
 	padding: 0;
+  &.standalone {
+    overflow: auto;
+    header {
+      margin-top: 0;
+    }
+  }
 }
 
 main {
@@ -75,6 +81,9 @@ a,
 a:visited {
 	color: #2D78BD;
 	text-decoration: none;
+  &:hover {
+    color: #00447A;
+  }
 }
 
 header {
@@ -87,6 +96,10 @@ header {
   width: 100%;
   .date {
     padding: 0 0 0 10px;
+  }
+  .link {
+    margin-left: auto;
+    padding-right: 20px;
   }
 }
 
@@ -105,9 +118,9 @@ header {
 
 .description {
   background-color: rgba(255, 255, 255, 0.5);
-  bottom: 7px;
+  bottom: 0px;
   color: #888;
-  padding: 10px;
+  padding: 10px 10px 15px;
   position: absolute;
   width: 100%;
   p {
@@ -336,6 +349,7 @@ header {
     }
   }
   .description {
+    color: #000;
     position: relative;
     width: 100%;
   }
