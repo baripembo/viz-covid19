@@ -105,9 +105,9 @@ header {
 
 .description {
   background-color: rgba(255, 255, 255, 0.5);
-  bottom: 0;
+  bottom: 7px;
   color: #888;
-  padding: 20px;
+  padding: 10px;
   position: absolute;
   width: 100%;
   p {
@@ -115,9 +115,16 @@ header {
   }
 }
 
-.global-figures {
-	padding-left: 20px;
-	width: 40%;
+.toggle {
+  background-color: #FFF;
+  border: 0;
+  bottom: 0;
+  color: #000;
+  display: none;
+  height: 30px;
+  position: absolute;
+  right: 0px;
+  width: 60px;
 }
 
 .panel {
@@ -205,14 +212,13 @@ header {
       width: 30px;
       height: 30px;
       font-size: 18px;
-      display: grid;
       border-radius: 50% !important;
       background: #FFF;
       color: #000;
       border: none;
       user-select: none;
       cursor: pointer;
-      box-sizing: border-box;
+      text-align: center;
     }
     button:active {
       background: rgba(255, 255, 255, 0.8);
@@ -330,7 +336,11 @@ header {
     }
   }
   .description {
+    position: relative;
     width: 100%;
+  }
+  .toggle {
+    display: block;
   }
   .panel {
     .panel-inner {
@@ -349,6 +359,7 @@ header {
       grid-gap: 0;
       button {
         border-radius: 0 !important;
+        width: 30px !important;
         &#zoom_in {
           border-bottom: 1px solid #CCC;
           height: 31px;

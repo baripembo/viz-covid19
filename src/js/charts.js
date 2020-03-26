@@ -144,7 +144,6 @@ function createTimeSeries(array) {
 
   //show every other tick for legibility
   var ticks = d3.selectAll(".c3-axis-y .tick text");
-  console.log('ticks', ticks)
   ticks.each(function(_,i){
     if (i%2 !== 0) d3.select(this).remove();
   });
