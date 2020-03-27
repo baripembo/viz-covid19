@@ -50,12 +50,12 @@ $( document ).ready(function() {
       //create page link
       var embed = { text: 'See COVID-19 Pandemic page', link: 'https://data.humdata.org/event/covid-19' };
       var standalone = { text: 'Open fullscreen', link: 'https://data.humdata.org/visualization/covid19' };
-      if (page.indexOf('visualization') > -1 || page.indexOf('127') > -1) { 
-        $('body').addClass('standalone');
-        createLink(embed);
+      if (window.location !== window.parent.location) {
+        createLink(standalone);
       }
       else {
-        createLink(standalone);
+        $('body').addClass('standalone');
+        createLink(embed);
       }
 
       //create vis elements
