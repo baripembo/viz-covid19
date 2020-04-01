@@ -1,8 +1,8 @@
 {
-  "name": "viz-starter",
+  "name": "viz-covid19",
   "version": "1.0.0",
   "description": "",
-  "homepage": "https://github.com/baripembo/viz-covid19.git",
+  "homepage": "https://github.com/OCHA-DAP/viz-covid19.git",
   "main": " ",
   "scripts": {
     "start": "http-server ./dist -c-1 -p 3000",

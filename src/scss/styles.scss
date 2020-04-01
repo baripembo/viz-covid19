@@ -14,32 +14,41 @@ body {
   background-color: #FFF;
   color: #000;
 	font-family: 'Source Sans Pro', sans-serif;
-  font-size: 14px;
-  line-height: 20px;
+  font-size: 12px;
+  line-height: 18px;
 	margin: 0;
+  overflow: hidden;
 	padding: 0;
+  &.standalone {
+    overflow: auto;
+    header {
+      margin-top: 0;
+    }
+  }
 }
 
 main {
+  height: 670px;
   opacity: 0;
   transition: 0.5s all ease;
 }
 
 h1 {
 	font-family: 'Gotham-Bold', sans-serif;
-	font-size: 22px;
+  font-weight: normal;
+	font-size: 16px;
+  line-height: 49px;
 	margin: 0;
+  padding-left: 20px;
 }
 
 h2 {
-	background-color: #EDF6FD;
   border-bottom: 1px solid #CCC;
   font-family: 'Gotham-Bold', sans-serif;
   font-size: 16px;
   font-weight: normal;
-  line-height: 49px;
   margin-top: 0;
-  padding-left: 20px;
+  padding-bottom: 15px;
 }
 
 h3,
@@ -49,6 +58,15 @@ h3,
 	font-size: 14px;
 	line-height: 16px;
 	font-weight: normal;
+}
+
+h4 {
+  color: #000;
+  font-family: 'Source Sans Pro', sans-serif;
+  font-size: 12px;
+  line-height: 14px;
+  font-weight: normal;
+  margin: 0;
 }
 
 ul {
@@ -63,37 +81,68 @@ a,
 a:visited {
 	color: #2D78BD;
 	text-decoration: none;
+  &:hover {
+    color: #00447A;
+  }
 }
 
 header {
-	color: #000;
-	padding: 20px;
-	position: fixed;
-	top: 0;
-	width: 60%;
-	z-index: 2;
-	p {
-		margin-bottom: 0;
-	}
+  align-items: center;
+  background-color: #EDF6FD;
+  border-bottom: 1px solid #CCC;
+  display: flex;
+  flex-flow: row;
+  margin-top: 20px;
+  width: 100%;
+  .date {
+    padding: 0 0 0 10px;
+  }
+  .link {
+    margin-left: auto;
+    padding-right: 20px;
+  }
+}
+
+.content {
+  display: flex;
+  flex-flow: row;
+  position: relative;
+  .content-left {
+    position: relative;
+    width: 60%;
+  }
+  .content-right {
+    width: 40%;
+  }
 }
 
 .description {
-	width: 60%;
+  background-color: rgba(255, 255, 255, 0.5);
+  bottom: 0px;
+  color: #888;
+  padding: 10px 10px 15px;
+  position: absolute;
+  width: 100%;
+  p {
+    margin: 0;
+  }
 }
 
-.global-figures {
-	padding-left: 20px;
-	width: 40%;
+.toggle {
+  background-color: #FFF;
+  border: 0;
+  bottom: 0;
+  color: #000;
+  display: none;
+  height: 30px;
+  position: absolute;
+  right: 0px;
+  width: 60px;
 }
 
 .panel {
 	background-color: #FFF;
-	height: 100%;
-	overflow: auto;
-	position: absolute;
-	right: 0;
-	top: 0;
-	width: 40%;
+  z-index: 2;
 	.panel-inner {
 		padding: 20px;
 	}
@@ -107,6 +156,7 @@ header {
 		width: 33%;
 		.inner {
 			border-bottom: 1px solid #CCC;
+      border-top: 1px solid #CCC;
 			h3 {
 				height: 32px;
 			}
@@ -134,7 +184,6 @@ header {
 	font-weight: 700;
 	margin: 0;
 	padding-bottom: 0;
-	text-transform: uppercase;
 }
 
 .small {
@@ -146,10 +195,6 @@ header {
 .date {
 	color: #888;
 	padding-bottom: 20px;
-}
-
-.content {
-	position: relative;
 }
 
 .logos {
@@ -173,21 +218,20 @@ header {
   .zoom-controls {
     position: absolute;
     left: 20px;
-    top: 20px;
+    top: 170px;
     display: grid;
     grid-gap: 5px;  
     button {
       width: 30px;
       height: 30px;
       font-size: 18px;
-      display: grid;
       border-radius: 50% !important;
       background: #FFF;
       color: #000;
       border: none;
       user-select: none;
       cursor: pointer;
-      box-sizing: border-box;
+      text-align: center;
     }
     button:active {
       background: rgba(255, 255, 255, 0.8);
@@ -198,13 +242,13 @@ header {
   }
   .map-legend {
   	background-color: #FFF;
-  	bottom: 20px;
+  	top: 20px;
   	color: #000;
   	height: 140px;
   	opacity: 0.8;
   	position: absolute;
   	left: 20px;
-  	width: 160px;
+  	width: 110px;
   	.legend-inner {
   		padding: 0 10px 10px;
   	}
@@ -212,6 +256,9 @@ header {
   		fill: #000;
   		font-size: 12px;
   	}
+    h3 {
+      font-size: 12px;
+    }
   }
 }
 
@@ -237,11 +284,12 @@ header {
   color: #000;
   font-size: 14px;
   line-height: 18px;
-  height: 100px;
+  height: 80px;
   opacity: 0;
   padding: 10px;
   pointer-events: none;
   position: absolute;
+  top: 0;
   transition: 0.3s opacity ease;
   width: 130px;
   z-index: 100;
@@ -265,7 +313,7 @@ header {
 }
 
 .timeseries-chart {
-	margin-top: 10px;
+	margin: 10px 0;
 }
 
 .c3-title {
@@ -277,5 +325,60 @@ header {
 
 
 @media only screen and (max-width: 767px) {
-
+  body {
+    overflow: auto;
+  }
+  h1 {
+    line-height: 18px;
+    padding-left: 0;
+  }
+  header {
+    align-items: flex-start;
+    flex-flow: column;
+    margin-top: 0;
+    padding: 10px;
+    .date {
+      padding: 5px 0 0;
+    }
+  }
+  .content {
+    flex-flow: column;
+    .content-left,
+    .content-right {
+      width: 100%;
+    }
+  }
+  .description {
+    color: #000;
+    position: relative;
+    width: 100%;
+  }
+  .toggle {
+    display: block;
+  }
+  .panel {
+    .panel-inner {
+      padding: 10px;
+    }
+  }
+  #map {
+    .map-legend {
+      left: 10px;
+      top: 10px;
+    }
+    .zoom-controls {
+      left: auto;
+      right: 10px;
+      top: 10px;
+      grid-gap: 0;
+      button {
+        border-radius: 0 !important;
+        width: 30px !important;
+        &#zoom_in {
+          border-bottom: 1px solid #CCC;
+          height: 31px;
+        }
+      }
+    }
+  }
 }

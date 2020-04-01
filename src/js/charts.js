@@ -72,7 +72,9 @@ function initTimeseries(data) {
 
   var dateArray = ['x'];
   groupByDate.forEach(function(d) {
-  	dateArray.push(new Date(d.key));
+    var date = new Date(d.key);
+    var utcDate = new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
+  	dateArray.push(utcDate);
   });
 
   var timeseriesArray = [];
@@ -99,8 +101,9 @@ var timeseriesChart;
 function createTimeSeries(array) {
 	timeseriesChart = c3.generate({
     padding: {
-      top: 20,
-      left: 25,
+      top: 10,
+      left: 30,
+      right: 20
     },
     bindto: '.timeseries-chart',
     title: {
@@ -109,28 +112,40 @@ function createTimeSeries(array) {
 		},
 		data: {
 			x: 'x',
-			columns: array
+			columns: array,
+      type: 'spline'
 		},
-    point: {
-      show: false
+    spline: {
+      interpolation: {
+        type: 'basis'
+      }
     },
+    point: { show: false },
 		axis: {
 			x: {
 				type: 'timeseries',
 				tick: {
-				  format: '%-m/%-d/%y'
+          count: 8,
+				  format: '%-m/%-d/%y',
+          outer: false
 				}
 			},
 			y: {
 				min: 0,
-				padding: { top:0, bottom:0 }
+				padding: { top:0, bottom:0 },
+        tick: { 
+          outer: false
+        }
 			}
 		},
-		tooltip: {
-  		grouped: false
-		},
-    transition: {
-      duration: 100
-    }
+    legend: { show: false },
+		tooltip: { grouped: false },
+    transition: { duration: 300 }
 	});
+
+  //show every other tick for legibility
+  var ticks = d3.selectAll(".c3-axis-y .tick text");
+  ticks.each(function(_,i){
+    if (i%2 !== 0) d3.select(this).remove();
+  });
 }
