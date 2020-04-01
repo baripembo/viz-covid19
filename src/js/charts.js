@@ -138,8 +138,9 @@ function createTimeSeries(array) {
         }
 			}
 		},
+    legend: { show: false },
 		tooltip: { grouped: false },
-    transition: { duration: 100 }
+    transition: { duration: 300 }
 	});
 
   //show every other tick for legibility
