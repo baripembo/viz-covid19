@@ -59,7 +59,12 @@ function createBarChart(name, countries, values) {
 
 
 function initTimeseries(data) {
-	//group the data by country
+  var timeseriesArray = formatTimeseriesData(data);
+  createTimeSeries(timeseriesArray);
+}
+
+function formatTimeseriesData(data) {
+  //group the data by country
   var groupByCountry = d3.nest()
     .key(function(d){ return d['Country']; })
     .key(function(d) { return d['Date']; })
@@ -73,35 +78,38 @@ function initTimeseries(data) {
 
   var dateArray = ['x'];
   groupByDate.forEach(function(d) {
-  	dateArray.push(new Date(d.key));
+    var date = new Date(d.key);
+    var utcDate = new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
+    dateArray.push(utcDate);
   });
 
   var timeseriesArray = [];
   timeseriesArray.push(dateArray);
 
   groupByCountry.forEach(function(country, index) {
-  	var arr = [country.key];
-  	var val = 0;
-		groupByDate.forEach(function(d) {
-			country.values.forEach(function(e) {
-				if (d.key == e.key) {
-					val = e.values[0]['confirmed cases'];
-				}
-			});
-			arr.push(val);
-		});
-  	timeseriesArray.push(arr);
+    var arr = [country.key];
+    var val = 0;
+    groupByDate.forEach(function(d) {
+      country.values.forEach(function(e) {
+        if (d.key == e.key) {
+          val = e.values[0]['confirmed cases'];
+        }
+      });
+      arr.push(val);
+    });
+    timeseriesArray.push(arr);
   });
 
-  createTimeSeries(timeseriesArray)
+  return timeseriesArray;
 }
 
 var timeseriesChart;
 function createTimeSeries(array) {
 	timeseriesChart = c3.generate({
     padding: {
-      top: 20,
-      left: 25,
+      top: 10,
+      left: 30,
+      right: 16
     },
     bindto: '.timeseries-chart',
     title: {
@@ -110,82 +118,104 @@ function createTimeSeries(array) {
 		},
 		data: {
 			x: 'x',
-			columns: array
+			columns: array,
+      type: 'spline'
 		},
-    point: {
-      show: false
+    color: {
+        pattern: ['#1ebfb3', '#f2645a', '#007ce1', '#9c27b0', '#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']
     },
+    spline: {
+      interpolation: {
+        type: 'basis'
+      }
+    },
+    point: { show: false },
 		axis: {
 			x: {
 				type: 'timeseries',
 				tick: {
-				  format: '%-m/%-d/%y'
+          count: 8,
+				  format: '%-m/%-d/%y',
+          outer: false
 				}
 			},
 			y: {
 				min: 0,
-				padding: { top:0, bottom:0 }
+				padding: { top:0, bottom:0 },
+        tick: { 
+          outer: false
+        }
 			}
 		},
-		tooltip: {
-  		grouped: false
-		},
-    transition: {
-      duration: 100
-    }
+    legend: {
+      show: false,
+      position: 'inset',
+      inset: {
+          anchor: 'top-left',
+          x: 10,
+          y: 0,
+          step: 8
+      }
+    },
+		tooltip: { grouped: false },
+    transition: { duration: 300 }
 	});
-}
-var countryList = [
-    "Afghanistan",
-    "Burkina Faso",
-    "Burundi",
-    "Cameroon",
-    "Central African Republic",
-    "Chad",
-    "Democratic Republic of the Congo",
-    "Ethiopia",
-    "Haiti",
-    "Iraq",
-    "Libya",
-    "Mali",
-    "Myanmar",
-    "Niger",
-    "Nigeria",
-    "occupied Palestinian territory",
-    "Somalia",
-    "South Sudan",
-    "Sudan",
-    "Syria",
-    "Ukraine",
-    "Venezuela (Bolivarian Republic of)",
-    "Yemen"
-];
 
-// var countryList = [
-//     "AFG",
-//     "BFA",
-//     "BDI",
-//     "CMR",
-//     "CAF",
-//     "TCD",
-//     "COD",
-//     "ETH",
-//     "HTI",
-//     "IRQ",
-//     "LBY",
-//     "MLI",
-//     "MMR",
-//     "NER",
-//     "NGA",
-//     "PSE",
-//     "SOM",
-//     "SSD",
-//     "SDN",
-//     "SYR",
-//     "UKR",
-//     "VEN",
-//     "YEM"
-// ];
+  createTimeseriesLegend();
+}
+
+
+function createTimeseriesLegend() {
+  var names = [];
+  timeseriesChart.data.shown().forEach(function(d) {
+    names.push(d.id)
+  });
+
+  console.log(names)
+
+  //custom legend
+  d3.select('.timeseries-chart').insert('div').attr('class', 'timeseries-legend').selectAll('div')
+    .data(names)
+    .enter().append('div')
+    .attr('data-id', function(id) {
+      return id;
+    })
+    .html(function(id) {
+      return '<span></span>'+id;
+    })
+    .each(function(id) {
+      d3.select(this).select('span').style('background-color', timeseriesChart.color(id));
+    })
+    .on('mouseover', function(id) {
+      timeseriesChart.focus(id);
+    })
+    .on('mouseout', function(id) {
+      timeseriesChart.revert();
+    });
+}
+
+function updateTimeseries(data, selected) {
+  var updatedData = (selected != undefined) ? data.filter((country) => selected.includes(country['Country Code'])) : data;
+  var timeseriesArray = formatTimeseriesData(updatedData);
+
+  // if (selected == undefined)
+  //   timeseriesChart.legend.hide();
+  // else
+  //   timeseriesChart.legend.show();
+
+  //load new data
+  timeseriesChart.load({
+    columns: timeseriesArray,
+    unload: true,
+    done: function() {
+      $('.timeseries-legend').remove();
+      createTimeseriesLegend();
+    }
+  });
+
+  
+}
+
 
 function hxlProxyToJSON(input){
     var output = [];
@@ -257,16 +287,18 @@ function wrap(text, width) {
   });
 }
 $( document ).ready(function() {
-  var isMobile = $(window).width()<600? true : false;
+  var isMobile = window.innerWidth<768? true : false;
   var geomPath = 'data/worldmap.json';
-  var timeseriesPath = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vShO-ufDTcYrZq_4PlWUTJE_KmB8eg07kIwjLLYjguteCwgU4rD2jXsDvYsuCxIPNP7lquqK0x7uyfM/pub?gid=2070563594&single=true&output=csv';
-  var cumulativePath = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vShO-ufDTcYrZq_4PlWUTJE_KmB8eg07kIwjLLYjguteCwgU4rD2jXsDvYsuCxIPNP7lquqK0x7uyfM/pub?gid=1729792256&single=true&output=csv';
+  var timeseriesPath = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS23DBKc8c39Aq55zekL0GCu4I6IVnK4axkd05N6jUBmeJe9wA69s3CmMUiIvAmPdGtZPBd-cLS9YwS/pub?gid=1253093254&single=true&output=csv';
+  var cumulativePath = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS23DBKc8c39Aq55zekL0GCu4I6IVnK4axkd05N6jUBmeJe9wA69s3CmMUiIvAmPdGtZPBd-cLS9YwS/pub?gid=195339920&single=true&output=csv';
   var geomData, geomFilteredData, globalData, cumulativeData, timeseriesData, date, totalCases, totalDeaths = '';
   var countryCodeList = [];
-  var numFormat = d3.format(".2s");
+  var selectedCountries = [];
+  var numFormat = d3.format(",");
 
+  var page = window.location.href;
   var viewportWidth = window.innerWidth;
-  var viewportHeight = window.innerHeight - $('header').outerHeight();
+  var viewportHeight = $('main').outerHeight() - $('header').outerHeight();
   var tooltip = d3.select(".tooltip");
 
   function getData() {
@@ -295,13 +327,25 @@ $( document ).ready(function() {
       //filter for priority countries
       geomFilteredData = geomData.features.filter((country) => countryCodeList.includes(country.properties.ISO_A3));
     
+      //get most recent date from timeseries data
+      var lastUpdated = new Date(Math.max.apply(null, timeseriesData.map(function(e) {
+        return new Date(e.Date);
+      })));
+
       //set last updated date
-      var d = new Date(cumulativeData[0].last_updated);
-      date = getMonth(d.getMonth()) + ' ' + d.getUTCDate() + ', ' + d.getFullYear();
-      $('.date').html(date);
-      
-      //set heights
-      $('.content').css('margin-top', $('header').outerHeight());
+      date = getMonth(lastUpdated.getUTCMonth()) + ' ' + lastUpdated.getUTCDate() + ', ' + lastUpdated.getFullYear();
+      $('.date span').html(date);
+
+      //create page link
+      var embed = { text: 'See COVID-19 Pandemic page', link: 'https://data.humdata.org/event/covid-19' };
+      var standalone = { text: 'Open fullscreen', link: 'https://data.humdata.org/visualization/covid19' };
+      if (window.location !== window.parent.location) {
+        createLink(standalone);
+      }
+      else {
+        $('body').addClass('standalone');
+        createLink(embed);
+      }
 
       //create vis elements
       initPanel();
@@ -314,14 +358,30 @@ $( document ).ready(function() {
     });
   }
 
+  function createLink(type) {
+    $('.link').find('a').attr('href', type.link);
+    $('.link').find('span').html(type.text);
+  }
+
   function initPanel() {
     $('.panel').find('h2 a').on('click', function() {
       resetPanel();
     });
 
-    createKeyFigure('.stats-global', 'Global Confirmed Cases', 'global-cases', numFormat(globalData['confirmed cases']));
-    createKeyFigure('.stats-global', 'Global Confirmed Deaths', 'global-deaths', numFormat(globalData['deaths']));
-    createKeyFigure('.stats-global', 'Total Countries', 'global-locations', globalData['n_countries']);
+    var descriptionH = $('.description').outerHeight();
+    $('.toggle').css('bottom', descriptionH);
+    $('.toggle').on('click', function() {
+      if ($(this).hasClass('collapse')) {      
+        $(this).html('show').removeClass('collapse').css('bottom', 0);
+        $('.description').hide();
+      }
+      else {     
+        $(this).html('hide').addClass('collapse').css('bottom', descriptionH);
+        $('.description').show();
+      }
+    });
+
+    $('.stats-global').html('<h4>Global Figures: ' + numFormat(globalData['confirmed cases']) + ' total confirmed cases, ' + numFormat(globalData['deaths']) + ' total confirmed deaths</h4>');
 
     totalCases = d3.sum(cumulativeData, function(d) { return d['confirmed cases']; });
     totalDeaths = d3.sum(cumulativeData, function(d) { return d['deaths']; });
@@ -332,7 +392,7 @@ $( document ).ready(function() {
 
   function createKeyFigure(target, title, className, value) {
     var targetDiv = $(target);
-    return targetDiv.append("<div class='key-figure'><div class='inner'><h3>"+ title +"</h3><div class='num " + className + "'>"+ value +"</div><p class='date small'>"+ date +"</p></div></div></div>");
+    return targetDiv.append("<div class='key-figure'><div class='inner'><h3>"+ title +"</h3><div class='num " + className + "'>"+ value +"</div><p class='date small'><span>"+ date +"</span></p></div></div></div>");
   }
 
   function initMap(){
@@ -345,48 +405,49 @@ $( document ).ready(function() {
 
     var cases = d3.select('.legend-inner').append('svg')
       .attr('width', 200)
-      .attr('height', 80);
+      .attr('height', 100);
 
      cases.append('text')
       .attr('class', 'label')
       .attr('transform', 'translate(0,8)')
-      .text('Number of confirmed cases');
+      .text('Number of confirmed cases')
+      .call(wrap, 100);
 
     cases.append('circle')
       .attr('class', 'count-marker')
       .attr('r', 2)
-      .attr('transform', 'translate(10,38)');
+      .attr('transform', 'translate(10,45)');
 
     cases.append('text')
       .attr('class', 'label')
-      .attr('transform', 'translate(7,78)')
+      .attr('transform', 'translate(7,82)')
       .text('1');
 
     cases.append("circle")
       .attr('class', 'count-marker')
-      .attr('r', 20)
-      .attr("transform", "translate(50,38)");
+      .attr('r', 15)
+      .attr("transform", "translate(50,45)");
 
     cases.append('text')
       .attr('class', 'label')
-      .attr('transform', 'translate(42,78)')
+      .attr('transform', 'translate(42,82)')
       .text(max);
   }
 
-  var width, height, zoom, g, projection, markerScale;
+  var zoom, g, mapsvg, markerScale;
   function drawMap(){
-    width = viewportWidth;
-    height = viewportHeight;
-    var mapScale = width/5.5;
-    var mapCenter = [75, 0];
+    var width = viewportWidth;
+    var height = (isMobile) ? viewportHeight * .5 : viewportHeight;
+    var mapScale = (isMobile) ? width/3.5 : width/5.5;
+    var mapCenter = (isMobile) ? [10, 30] : [75, 8];
 
-    var max = d3.max(cumulativeData, function(d) { return d['confirmed cases']; } );
+    var max = d3.max(cumulativeData, function(d) { return +d['confirmed cases']; } );
     // var step = max/3;
     // var color = d3.scaleQuantize()
     //   .domain([0, step, step*2, step*3])
     //   .range(d3.schemeReds[4]);
 
-    projection = d3.geoMercator()
+    var projection = d3.geoMercator()
       .center(mapCenter)
       .scale(mapScale)
       .translate([width / 2, height / 2]);
@@ -395,7 +456,7 @@ $( document ).ready(function() {
       .scaleExtent([1, 8])
       .on("zoom", zoomed);
 
-    path = d3.geoPath().projection(projection);
+    var path = d3.geoPath().projection(projection);
 
     mapsvg = d3.select('#map').append('svg')
       .attr("width", width)
@@ -411,7 +472,7 @@ $( document ).ready(function() {
     //create log scale for circle markers
     markerScale = d3.scaleSqrt()
       .domain([1, max])
-      .range([4, 20]);
+      .range([2, 15]);
         
     //draw map
     g = mapsvg.append("g");
@@ -420,6 +481,9 @@ $( document ).ready(function() {
     .enter()
       .append("path")
       .attr("class", "map-regions")
+      .attr("id", function(d) {
+        return d.properties.ISO_A3;
+      })
       // .attr("fill", function(d) { 
       //   var country = whoFilteredData.filter(country => country.ADM0_NAME == d.properties.NAME_LONG);
       //   var num = (country[0] != undefined) ? country[0].cum_conf : -1;
@@ -428,27 +492,19 @@ $( document ).ready(function() {
       // })
       .attr("d", path)
       .on("mouseover", function(d){ 
-        var included = false;
-        countryCodeList.forEach(function(c){
-          if (c==d.properties.ISO_A3) included = true;
-        });
-        if (included){
+        if (isHRP(d.properties.ISO_A3)){
           tooltip.style("opacity", 1); 
         }
       })
       .on("mouseout", function(d) { tooltip.style("opacity", 0); })
       .on("mousemove", function(d) {
-        var included = false;
-        countryCodeList.forEach(function(c){
-          if (c==d.properties.ISO_A3) included = true;
-        });
-        if (included){
+        if (isHRP(d.properties.ISO_A3)){
           createMapTooltip(d.properties['ISO_A3'], d.properties.NAME_LONG);
         }
       })
       .on("click", function(d) {
-        var country = cumulativeData.filter(country => country['Country Code'] == d.properties.ISO_A3);
-        updatePanel(country[0]);
+        if (isHRP(d.properties.ISO_A3))
+          selectCountry(d);
       });
 
     //country labels
@@ -461,7 +517,7 @@ $( document ).ready(function() {
         .text(function(d) { return d.properties.NAME_LONG; })
         .call(wrap, 100);
 
-     //create tweet markers
+    //create count markers
     var countMarker = g.append("g")
       .attr("class", "count-layer")
       .selectAll(".count-marker")
@@ -472,7 +528,7 @@ $( document ).ready(function() {
         .attr("class", "marker count-marker")
         .attr("r", function (d){ 
           var country = cumulativeData.filter(country => country['Country Code'] == d.properties.ISO_A3);
-          return markerScale(country[0]['confirmed cases']); 
+          return markerScale(+country[0]['confirmed cases']); 
         })
         .attr("transform", function(d){ return "translate(" + path.centroid(d) + ")"; })
         .on("mouseover", function(){ tooltip.style("opacity", 1); })
@@ -481,8 +537,7 @@ $( document ).ready(function() {
           createMapTooltip(d.properties.ISO_A3, d.properties.NAME_LONG);
         })
         .on("click", function(d) {
-          var country = cumulativeData.filter(country => country['Country Code'] == d.properties.ISO_A3);
-          updatePanel(country[0]);
+          selectCountry(d);
         });
 
     //tooltip
@@ -498,13 +553,44 @@ $( document ).ready(function() {
     });
   }
 
+  function isHRP(country_code) {
+    var included = false;
+    countryCodeList.forEach(function(c){
+      if (c==country_code) included = true;
+    });
+    return included;
+  }
+
+  function selectCountry(d) {
+    //update map
+    var mapRegion = d3.select('#map').select('#'+d.properties.ISO_A3);
+    if (mapRegion.classed('selected')) {
+      mapRegion.classed('selected', false);
+
+      const index = selectedCountries.indexOf(d.properties.ISO_A3);
+      if (index > -1) {
+        selectedCountries.splice(index, 1);
+      }
+    }
+    else {
+      mapRegion.classed('selected', true);
+      selectedCountries.push(d.properties.ISO_A3);
+    }
+
+    //update panel
+    // var country = cumulativeData.filter(country => country['Country Code'] == d.properties.ISO_A3);
+    // updatePanel(country[0]);
+    updatePanel(selectedCountries);
+    updateTimeseries(timeseriesData, selectedCountries);
+  }
+
   function createMapTooltip(country_code, country_name){
     var country = cumulativeData.filter(c => c['Country Code'] == country_code);
     var cases = (country[0] != undefined) ? country[0]['confirmed cases'] : -1;
     var deaths = (country[0] != undefined) ? country[0]['deaths'] : -1;
 
     var w = $('.tooltip').outerWidth();
-    var h = $('.tooltip-inner').outerHeight() + 20;
+    var h = ($('.tooltip-inner').outerHeight() <= 0) ? 80 : $('.tooltip-inner').outerHeight() + 20;
     tooltip.select('div').html("<label class='h3 label-header'>" + country_name + "</label>Cases: "+ cases +"<br/>Deaths: "+ deaths +"<br/>");
     tooltip
       .style('height', h + 'px')
@@ -524,18 +610,33 @@ $( document ).ready(function() {
 
       mapsvg.selectAll('.country-label')
         .style('font-size', function(d) { return 12/transform.k+'px'; });
+
+      //update map markers
+      mapsvg.selectAll('circle').each(function(m){
+        var marker = d3.select(this);
+        cumulativeData.forEach(function(d){
+          if (m.properties.ISO_A3 == d['Country Code']) {
+            var r = markerScale(d['confirmed cases']);
+            marker.transition().duration(500).attr('r', function (d) { 
+              return (r/currentZoom);
+            });
+          }
+        });
+      });
     }
   }
 
-  function updatePanel(country) {
-    if (country != undefined) {
-      $('.panel').find('h2 span').html(' > ' + country['Country']);
-      $('.key-figure').find('.cases').html(country['confirmed cases']);
-      $('.key-figure').find('.deaths').html(country['deaths']);
-      $('.key-figure').find('.locations').html(country['n_countries']);
-      //timeseriesChart.focus(country['Country']);
-      timeseriesChart.hide();
-      timeseriesChart.show(country['Country'], true);
+  function updatePanel(selected) {
+    var updatedData = cumulativeData.filter((country) => selected.includes(country['Country Code']));
+    var cases = d3.sum(updatedData, function(d) { return +d['confirmed cases']; } );
+    var deaths = d3.sum(updatedData, function(d) { return +d['deaths']; } );
+    var locations = updatedData.length;
+
+    if (updatedData.length > 0) {
+      //$('.panel').find('h2 span').html(' > ' + country['Country']);
+      $('.key-figure').find('.cases').html(cases);
+      $('.key-figure').find('.deaths').html(deaths);
+      $('.key-figure').find('.locations').html(locations);
     }
   }
 
@@ -544,13 +645,15 @@ $( document ).ready(function() {
     $('.key-figure').find('.cases').html(totalCases);
     $('.key-figure').find('.deaths').html(totalDeaths);
     $('.key-figure').find('.locations').html(cumulativeData.length);
-    //timeseriesChart.focus();
-    timeseriesChart.show();
+    
+    updateTimeseries(timeseriesData);
+
+    $('.map-regions').removeClass('selected');
   }
 
   function initTracking() {
     //initialize mixpanel
-    let MIXPANEL_TOKEN = '';
+    let MIXPANEL_TOKEN = window.location.hostname==='data.humdata.org'? '5cbf12bc9984628fb2c55a49daf32e74' : '99035923ee0a67880e6c05ab92b6cbc0';
     mixpanel.init(MIXPANEL_TOKEN);
     mixpanel.track('page view', {
       'page title': document.title,
@@ -559,5 +662,5 @@ $( document ).ready(function() {
   }
 
   getData();
-  //initTracking();
+  initTracking();
 });
