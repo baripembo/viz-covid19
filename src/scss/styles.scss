@@ -214,6 +214,9 @@ header {
   	fill: #F2F2EF;
     stroke: #CCC;
     cursor: pointer;
+    &.selected {
+      fill: #FFF;
+    }
   }
   .zoom-controls {
     position: absolute;
@@ -316,11 +319,36 @@ header {
 	margin: 10px 0;
 }
 
+.timeseries-legend {
+  background-color: rgba(255, 255, 255, 0.5);
+  border: 1px solid #CCC;
+  left: 38px;
+  height: 196px;
+  min-width: 206px;
+  overflow: scroll;
+  padding: 5px 10px 0 0;
+  position: absolute;
+  top: 30px;
+  > div {
+    cursor: pointer;
+  }
+  span {
+    display: inline-block;
+    margin-left: 7px;
+    margin-right: 7px;
+    padding: 5px;
+  }
+}
+
 .c3-title {
   font-family: 'Gotham-Bold', sans-serif;
 	font-size: 14px;
 	line-height: 21px;
 	font-weight: normal;
+}
+
+.c3-legend-background {
+  stroke: none;
 }
 
 
