@@ -171,8 +171,6 @@ function createTimeseriesLegend() {
     names.push(d.id)
   });
 
-  console.log(names)
-
   //custom legend
   d3.select('.timeseries-chart').insert('div').attr('class', 'timeseries-legend').selectAll('div')
     .data(names)
@@ -198,11 +196,6 @@ function updateTimeseries(data, selected) {
   var updatedData = (selected != undefined) ? data.filter((country) => selected.includes(country['Country Code'])) : data;
   var timeseriesArray = formatTimeseriesData(updatedData);
 
-  // if (selected == undefined)
-  //   timeseriesChart.legend.hide();
-  // else
-  //   timeseriesChart.legend.show();
-
   //load new data
   timeseriesChart.load({
     columns: timeseriesArray,
@@ -212,8 +205,6 @@ function updateTimeseries(data, selected) {
       createTimeseriesLegend();
     }
   });
-
-  
 }
 
 
@@ -522,7 +513,6 @@ $( document ).ready(function() {
         .append("circle")
         .attr("class", "marker count-marker")
         .attr("id", function(d) {
-          console.log(d.properties.ISO_A3)
           return d.properties.ISO_A3;
         })
         .attr("r", function (d){ 
