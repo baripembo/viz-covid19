@@ -76,7 +76,7 @@ $( document ).ready(function() {
   }
 
   function initPanel() {
-    $('.panel').find('h2 a').on('click', function() {
+    $('#reset').on('click', function() {
       resetPanel();
     });
 
@@ -107,6 +107,12 @@ $( document ).ready(function() {
     return targetDiv.append("<div class='key-figure'><div class='inner'><h3>"+ title +"</h3><div class='num " + className + "'>"+ value +"</div><p class='date small'><span>"+ date +"</span></p></div></div></div>");
   }
 
+
+  /*********************/
+  /*** MAP FUNCTIONS ***/
+  /*********************/
+  var zoom, g, mapsvg, markerScale;
+
   function initMap(){
     drawMap();
     createMapLegend();
@@ -117,7 +123,7 @@ $( document ).ready(function() {
 
     var cases = d3.select('.legend-inner').append('svg')
       .attr('width', 200)
-      .attr('height', 100);
+      .attr('height', 80);
 
      cases.append('text')
       .attr('class', 'label')
@@ -128,25 +134,24 @@ $( document ).ready(function() {
     cases.append('circle')
       .attr('class', 'count-marker')
       .attr('r', 2)
-      .attr('transform', 'translate(10,45)');
+      .attr('transform', 'translate(10,43)');
 
     cases.append('text')
       .attr('class', 'label')
-      .attr('transform', 'translate(7,82)')
+      .attr('transform', 'translate(7,75)')
       .text('1');
 
     cases.append("circle")
       .attr('class', 'count-marker')
       .attr('r', 15)
-      .attr("transform", "translate(50,45)");
+      .attr("transform", "translate(50,43)");
 
     cases.append('text')
       .attr('class', 'label')
-      .attr('transform', 'translate(42,82)')
+      .attr('transform', 'translate(42,75)')
       .text(max);
   }
 
-  var zoom, g, mapsvg, markerScale;
   function drawMap(){
     var width = viewportWidth;
     var height = (isMobile) ? viewportHeight * .5 : viewportHeight;
@@ -154,10 +159,6 @@ $( document ).ready(function() {
     var mapCenter = (isMobile) ? [10, 30] : [75, 8];
 
     var max = d3.max(cumulativeData, function(d) { return +d['confirmed cases']; } );
-    // var step = max/3;
-    // var color = d3.scaleQuantize()
-    //   .domain([0, step, step*2, step*3])
-    //   .range(d3.schemeReds[4]);
 
     var projection = d3.geoMercator()
       .center(mapCenter)
@@ -196,12 +197,6 @@ $( document ).ready(function() {
       .attr("id", function(d) {
         return d.properties.ISO_A3;
       })
-      // .attr("fill", function(d) { 
-      //   var country = whoFilteredData.filter(country => country.ADM0_NAME == d.properties.NAME_LONG);
-      //   var num = (country[0] != undefined) ? country[0].cum_conf : -1;
-      //   var clr = (num<0) ? '#E8E8E8' : color(num);
-      //   return clr;
-      // })
       .attr("d", path)
       .on("mouseover", function(d){ 
         if (isHRP(d.properties.ISO_A3)){
@@ -238,6 +233,9 @@ $( document ).ready(function() {
         .append("g")
         .append("circle")
         .attr("class", "marker count-marker")
+        .attr("id", function(d) {
+          return d.properties.ISO_A3;
+        })
         .attr("r", function (d){ 
           var country = cumulativeData.filter(country => country['Country Code'] == d.properties.ISO_A3);
           return markerScale(+country[0]['confirmed cases']); 
@@ -274,10 +272,10 @@ $( document ).ready(function() {
   }
 
   function selectCountry(d) {
-    //update map
-    var mapRegion = d3.select('#map').select('#'+d.properties.ISO_A3);
-    if (mapRegion.classed('selected')) {
-      mapRegion.classed('selected', false);
+    //update marker selection
+    var marker = d3.select('.count-layer').select('#'+d.properties.ISO_A3);
+    if (marker.classed('selected')) {
+      marker.classed('selected', false);
 
       const index = selectedCountries.indexOf(d.properties.ISO_A3);
       if (index > -1) {
@@ -285,13 +283,11 @@ $( document ).ready(function() {
       }
     }
     else {
-      mapRegion.classed('selected', true);
+      marker.classed('selected', true);
       selectedCountries.push(d.properties.ISO_A3);
     }
 
     //update panel
-    // var country = cumulativeData.filter(country => country['Country Code'] == d.properties.ISO_A3);
-    // updatePanel(country[0]);
     updatePanel(selectedCountries);
     updateTimeseries(timeseriesData, selectedCountries);
   }
@@ -337,6 +333,8 @@ $( document ).ready(function() {
       });
     }
   }
+  /*********************/
+
 
   function updatePanel(selected) {
     var updatedData = cumulativeData.filter((country) => selected.includes(country['Country Code']));
@@ -345,7 +343,6 @@ $( document ).ready(function() {
     var locations = updatedData.length;
 
     if (updatedData.length > 0) {
-      //$('.panel').find('h2 span').html(' > ' + country['Country']);
       $('.key-figure').find('.cases').html(cases);
       $('.key-figure').find('.deaths').html(deaths);
       $('.key-figure').find('.locations').html(locations);
@@ -353,6 +350,7 @@ $( document ).ready(function() {
   }
 
   function resetPanel() {
+    selectedCountries = [];
     $('.panel').find('h2 span').html('');
     $('.key-figure').find('.cases').html(totalCases);
     $('.key-figure').find('.deaths').html(totalDeaths);
@@ -360,7 +358,7 @@ $( document ).ready(function() {
     
     updateTimeseries(timeseriesData);
 
-    $('.map-regions').removeClass('selected');
+    $('.count-marker').removeClass('selected');
   }
 
   function initTracking() {
