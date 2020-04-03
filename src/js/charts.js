@@ -58,7 +58,12 @@ function createBarChart(name, countries, values) {
 
 
 function initTimeseries(data) {
-	//group the data by country
+  var timeseriesArray = formatTimeseriesData(data);
+  createTimeSeries(timeseriesArray);
+}
+
+function formatTimeseriesData(data) {
+  //group the data by country
   var groupByCountry = d3.nest()
     .key(function(d){ return d['Country']; })
     .key(function(d) { return d['Date']; })
@@ -74,27 +79,27 @@ function initTimeseries(data) {
   groupByDate.forEach(function(d) {
     var date = new Date(d.key);
     var utcDate = new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
-  	dateArray.push(utcDate);
+    dateArray.push(utcDate);
   });
 
   var timeseriesArray = [];
   timeseriesArray.push(dateArray);
 
   groupByCountry.forEach(function(country, index) {
-  	var arr = [country.key];
-  	var val = 0;
-		groupByDate.forEach(function(d) {
-			country.values.forEach(function(e) {
-				if (d.key == e.key) {
-					val = e.values[0]['confirmed cases'];
-				}
-			});
-			arr.push(val);
-		});
-  	timeseriesArray.push(arr);
+    var arr = [country.key];
+    var val = 0;
+    groupByDate.forEach(function(d) {
+      country.values.forEach(function(e) {
+        if (d.key == e.key) {
+          val = e.values[0]['confirmed cases'];
+        }
+      });
+      arr.push(val);
+    });
+    timeseriesArray.push(arr);
   });
 
-  createTimeSeries(timeseriesArray)
+  return timeseriesArray;
 }
 
 var timeseriesChart;
@@ -103,7 +108,7 @@ function createTimeSeries(array) {
     padding: {
       top: 10,
       left: 30,
-      right: 20
+      right: 16
     },
     bindto: '.timeseries-chart',
     title: {
@@ -115,6 +120,9 @@ function createTimeSeries(array) {
 			columns: array,
       type: 'spline'
 		},
+    color: {
+        pattern: ['#1ebfb3', '#f2645a', '#007ce1', '#9c27b0', '#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']
+    },
     spline: {
       interpolation: {
         type: 'basis'
@@ -138,13 +146,63 @@ function createTimeSeries(array) {
         }
 			}
 		},
+    legend: {
+      show: false,
+      position: 'inset',
+      inset: {
+          anchor: 'top-left',
+          x: 10,
+          y: 0,
+          step: 8
+      }
+    },
 		tooltip: { grouped: false },
-    transition: { duration: 100 }
+    transition: { duration: 300 }
 	});
 
-  //show every other tick for legibility
-  var ticks = d3.selectAll(".c3-axis-y .tick text");
-  ticks.each(function(_,i){
-    if (i%2 !== 0) d3.select(this).remove();
+  createTimeseriesLegend();
+}
+
+
+function createTimeseriesLegend() {
+  var names = [];
+  timeseriesChart.data.shown().forEach(function(d) {
+    names.push(d.id)
+  });
+
+  //custom legend
+  d3.select('.timeseries-chart').insert('div').attr('class', 'timeseries-legend').selectAll('div')
+    .data(names)
+    .enter().append('div')
+    .attr('data-id', function(id) {
+      return id;
+    })
+    .html(function(id) {
+      return '<span></span>'+id;
+    })
+    .each(function(id) {
+      d3.select(this).select('span').style('background-color', timeseriesChart.color(id));
+    })
+    .on('mouseover', function(id) {
+      timeseriesChart.focus(id);
+    })
+    .on('mouseout', function(id) {
+      timeseriesChart.revert();
+    });
+}
+
+function updateTimeseries(data, selected) {
+  var updatedData = (selected != undefined) ? data.filter((country) => selected.includes(country['Country Code'])) : data;
+  var timeseriesArray = formatTimeseriesData(updatedData);
+
+  //load new data
+  timeseriesChart.load({
+    columns: timeseriesArray,
+    unload: true,
+    done: function() {
+      $('.timeseries-legend').remove();
+      createTimeseriesLegend();
+    }
   });
 }
+
