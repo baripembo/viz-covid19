@@ -114,8 +114,11 @@ $( document ).ready(function() {
   var zoom, g, mapsvg, markerScale;
 
   function initMap(){
-    drawMap();
-    createMapLegend();
+    setTimeout(function() {
+      viewportHeight = $('.panel').height();
+      drawMap();
+      createMapLegend();
+    }, 100);
   }
 
   function createMapLegend() {
