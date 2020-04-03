@@ -629,6 +629,7 @@ $( document ).ready(function() {
   }
 
   function resetPanel() {
+    selectedCountries = [];
     $('.panel').find('h2 span').html('');
     $('.key-figure').find('.cases').html(totalCases);
     $('.key-figure').find('.deaths').html(totalDeaths);
