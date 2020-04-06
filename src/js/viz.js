@@ -3,7 +3,7 @@ $( document ).ready(function() {
   var geomPath = 'data/worldmap.json';
   var timeseriesPath = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS23DBKc8c39Aq55zekL0GCu4I6IVnK4axkd05N6jUBmeJe9wA69s3CmMUiIvAmPdGtZPBd-cLS9YwS/pub?gid=1253093254&single=true&output=csv';
   var cumulativePath = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS23DBKc8c39Aq55zekL0GCu4I6IVnK4axkd05N6jUBmeJe9wA69s3CmMUiIvAmPdGtZPBd-cLS9YwS/pub?gid=195339920&single=true&output=csv';
-  var geomData, geomFilteredData, globalData, cumulativeData, timeseriesData, date, totalCases, totalDeaths = '';
+  var geomData, geomFilteredData, globalData, cumulativeData, timeseriesData, date, totalCases, totalDeaths, descriptionText = '';
   var countryCodeList = [];
   var selectedCountries = [];
   var numFormat = d3.format(",");
@@ -21,6 +21,10 @@ $( document ).ready(function() {
     ]).then(function(data){
       //parse data
       geomData = topojson.feature(data[0], data[0].objects.geom);
+      data[2].forEach(function(item) {
+        if (item.Country == 'Occupied Palestinian Territory') item.Country = 'occupied Palestinian territory';
+      });
+
       cumulativeData = data[1];
       timeseriesData = data[2];
 
@@ -70,28 +74,29 @@ $( document ).ready(function() {
     });
   }
 
-  function createLink(type) {
-    $('.link').find('a').attr('href', type.link);
-    $('.link').find('span').html(type.text);
-  }
 
+  /***********************/
+  /*** PANEL FUNCTIONS ***/
+  /***********************/
   function initPanel() {
     $('#reset').on('click', function() {
-      resetPanel();
+      resetViz();
     });
 
-    var descriptionH = $('.description').outerHeight();
-    $('.toggle').css('bottom', descriptionH);
-    $('.toggle').on('click', function() {
-      if ($(this).hasClass('collapse')) {      
-        $(this).html('show').removeClass('collapse').css('bottom', 0);
-        $('.description').hide();
-      }
-      else {     
-        $(this).html('hide').addClass('collapse').css('bottom', descriptionH);
-        $('.description').show();
-      }
-    });
+    if (isMobile) {
+      descriptionText = $('.description').html() + '<a>show less</a>';
+      $('.description').html(descriptionText);
+      var shortDescriptionText = truncateString(descriptionText, 129) + ' <a>show more</a>';
+
+      $('.description').on('click', function() {
+        if ($(this).hasClass('collapse')) {      
+          $(this).html(descriptionText).removeClass('collapse');
+        }
+        else {     
+          $(this).html(shortDescriptionText).addClass('collapse');
+        }
+      });
+    }
 
     $('.stats-global').html('<h4>Global Figures: ' + numFormat(globalData['confirmed cases']) + ' total confirmed cases, ' + numFormat(globalData['deaths']) + ' total confirmed deaths</h4>');
 
@@ -102,10 +107,19 @@ $( document ).ready(function() {
     createKeyFigure('.stats-priority', 'Total Locations', 'locations', cumulativeData.length);
   }
 
-  function createKeyFigure(target, title, className, value) {
-    var targetDiv = $(target);
-    return targetDiv.append("<div class='key-figure'><div class='inner'><h3>"+ title +"</h3><div class='num " + className + "'>"+ value +"</div><p class='date small'><span>"+ date +"</span></p></div></div></div>");
+  function updatePanel(selected) {
+    var updatedData = cumulativeData.filter((country) => selected.includes(country['Country Code']));
+    var cases = d3.sum(updatedData, function(d) { return +d['confirmed cases']; } );
+    var deaths = d3.sum(updatedData, function(d) { return +d['deaths']; } );
+    var locations = updatedData.length;
+
+    if (updatedData.length > 0) {
+      $('.key-figure').find('.cases').html(cases);
+      $('.key-figure').find('.deaths').html(deaths);
+      $('.key-figure').find('.locations').html(locations);
+    }
   }
+  /***********************/
 
 
   /*********************/
@@ -125,7 +139,7 @@ $( document ).ready(function() {
     var max = d3.max(cumulativeData, function(d) { return +d['confirmed cases']; })
 
     var cases = d3.select('.legend-inner').append('svg')
-      .attr('width', 200)
+      .attr('width', 95)
       .attr('height', 80);
 
      cases.append('text')
@@ -266,14 +280,6 @@ $( document ).ready(function() {
     });
   }
 
-  function isHRP(country_code) {
-    var included = false;
-    countryCodeList.forEach(function(c){
-      if (c==country_code) included = true;
-    });
-    return included;
-  }
-
   function selectCountry(d) {
     //update marker selection
     var marker = d3.select('.count-layer').select('#'+d.properties.ISO_A3);
@@ -291,8 +297,13 @@ $( document ).ready(function() {
     }
 
     //update panel
-    updatePanel(selectedCountries);
-    updateTimeseries(timeseriesData, selectedCountries);
+    if (selectedCountries.length < 1) {
+      resetViz();
+    }
+    else {
+      updatePanel(selectedCountries);
+      updateTimeseries(timeseriesData, selectedCountries);
+    }
   }
 
   function createMapTooltip(country_code, country_name){
@@ -339,20 +350,10 @@ $( document ).ready(function() {
   /*********************/
 
 
-  function updatePanel(selected) {
-    var updatedData = cumulativeData.filter((country) => selected.includes(country['Country Code']));
-    var cases = d3.sum(updatedData, function(d) { return +d['confirmed cases']; } );
-    var deaths = d3.sum(updatedData, function(d) { return +d['deaths']; } );
-    var locations = updatedData.length;
-
-    if (updatedData.length > 0) {
-      $('.key-figure').find('.cases').html(cases);
-      $('.key-figure').find('.deaths').html(deaths);
-      $('.key-figure').find('.locations').html(locations);
-    }
-  }
-
-  function resetPanel() {
+  /************************/
+  /*** HELPER FUNCTIONS ***/
+  /************************/
+  function resetViz() {
     selectedCountries = [];
     $('.panel').find('h2 span').html('');
     $('.key-figure').find('.cases').html(totalCases);
@@ -363,6 +364,26 @@ $( document ).ready(function() {
 
     $('.count-marker').removeClass('selected');
   }
+
+  function createLink(type) {
+    $('.link').find('a').attr('href', type.link);
+    $('.link').find('span').html(type.text);
+  }
+
+  function createKeyFigure(target, title, className, value) {
+    var targetDiv = $(target);
+    return targetDiv.append("<div class='key-figure'><div class='inner'><h3>"+ title +"</h3><div class='num " + className + "'>"+ value +"</div><p class='date small'><span>"+ date +"</span></p></div></div></div>");
+  }
+
+  function isHRP(country_code) {
+    var included = false;
+    countryCodeList.forEach(function(c){
+      if (c==country_code) included = true;
+    });
+    return included;
+  }
+  /************************/
+
 
   function initTracking() {
     //initialize mixpanel

@@ -123,21 +123,6 @@ header {
   padding: 10px 10px 15px;
   position: absolute;
   width: 100%;
-  p {
-    margin: 0;
-  }
-}
-
-.toggle {
-  background-color: #FFF;
-  border: 0;
-  bottom: 0;
-  color: #000;
-  display: none;
-  height: 30px;
-  position: absolute;
-  right: 0px;
-  width: 60px;
 }
 
 .panel {
@@ -393,6 +378,7 @@ header {
   }
   .description {
     color: #000;
+    padding-bottom: 0;
     position: relative;
     width: 100%;
   }
@@ -406,6 +392,9 @@ header {
   }
   .num {
     font-size: 42px;
+  }
+  #reset {
+    right: 10px;
   }
   #map {
     .map-legend {
