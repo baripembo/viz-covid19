@@ -319,7 +319,7 @@ header {
 .timeseries-legend {
   background-color: rgba(255, 255, 255, 0.5);
   border: 1px solid #CCC;
-  left: 38px;
+  left: 43px;
   max-height: 196px;
   overflow: scroll;
   padding: 5px 10px 0 0;
@@ -347,6 +347,18 @@ header {
   stroke: none;
 }
 
+@media only screen and (max-width: 1000px) {
+  .num {
+    font-size: 42px;
+  }
+  #reset {
+    right: 20px;
+    top: 8px;
+  }
+  .timeseries-chart {
+    margin-top: 30px;
+  }
+}
 
 @media only screen and (max-width: 767px) {
   body {
@@ -390,11 +402,9 @@ header {
       padding: 10px;
     }
   }
-  .num {
-    font-size: 42px;
-  }
   #reset {
     right: 10px;
+    top: 20px;
   }
   #map {
     .map-legend {
@@ -415,5 +425,8 @@ header {
         }
       }
     }
+  }
+  .timeseries-chart {
+    margin-top: 10px;
   }
 }

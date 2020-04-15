@@ -107,7 +107,7 @@ function createTimeSeries(array) {
 	timeseriesChart = c3.generate({
     padding: {
       top: 10,
-      left: 30,
+      left: 35,
       right: 16
     },
     bindto: '.timeseries-chart',
