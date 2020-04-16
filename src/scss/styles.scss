@@ -358,12 +358,6 @@ header {
   .timeseries-chart {
     margin-top: 30px;
   }
-}
-
-@media only screen and (max-width: 767px) {
-  body {
-    overflow: auto;
-  }
   h1 {
     line-height: 18px;
     padding-left: 0;
@@ -380,6 +374,12 @@ header {
       margin-left: 0;
       margin-top: 5px;
     }
+  }
+}
+
+@media only screen and (max-width: 767px) {
+  body {
+    overflow: auto;
   }
   .content {
     flex-flow: column;
