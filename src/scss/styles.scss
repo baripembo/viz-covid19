@@ -150,7 +150,7 @@ header {
 	.key-figure {
 		margin-right: 15px;
 		padding-bottom: 20px;
-		width: 33%;
+		width: 40%;
 		.inner {
 			border-bottom: 1px solid #CCC;
       border-top: 1px solid #CCC;
@@ -160,6 +160,7 @@ header {
 		}
 		&:last-child {
 			margin-right: 0;
+      width: 20%;
 		}
 	}
 }
