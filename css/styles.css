@@ -1216,19 +1216,6 @@ header {
   padding: 10px 10px 15px;
   position: absolute;
   width: 100%; }
-  .description p {
-    margin: 0; }
-
-.toggle {
-  background-color: #FFF;
-  border: 0;
-  bottom: 0;
-  color: #000;
-  display: none;
-  height: 30px;
-  position: absolute;
-  right: 0px;
-  width: 60px; }
 
 .panel {
   background-color: #FFF;
@@ -1252,12 +1239,14 @@ header {
   .stats .key-figure {
     margin-right: 15px;
     padding-bottom: 20px;
-    width: 33%; }
+    width: 30%; }
     .stats .key-figure .inner {
       border-bottom: 1px solid #CCC;
       border-top: 1px solid #CCC; }
       .stats .key-figure .inner h3 {
         height: 32px; }
+    .stats .key-figure:first-child {
+      width: 40%; }
     .stats .key-figure:last-child {
       margin-right: 0; }
 
@@ -1339,12 +1328,19 @@ header {
     #map .map-legend h3 {
       font-size: 12px; }
 
+.continent-label,
 .country-label {
   fill: #000;
   font-size: 13px;
+  opacity: 0;
   pointer-events: none;
   text-anchor: middle;
-  width: 100px; }
+  width: 100px;
+  transition: opacity 0.5s; }
+
+.continent-label {
+  opacity: 1;
+  text-transform: uppercase; }
 
 .count-marker {
   cursor: pointer;
@@ -1392,7 +1388,7 @@ header {
 .timeseries-legend {
   background-color: rgba(255, 255, 255, 0.5);
   border: 1px solid #CCC;
-  left: 38px;
+  left: 43px;
   max-height: 196px;
   overflow: scroll;
   padding: 5px 10px 0 0;
@@ -1415,9 +1411,14 @@ header {
 .c3-legend-background {
   stroke: none; }
 
-@media only screen and (max-width: 767px) {
-  body {
-    overflow: auto; }
+@media only screen and (max-width: 1000px) {
+  .num {
+    font-size: 42px; }
+  #reset {
+    right: 20px;
+    top: 8px; }
+  .timeseries-chart {
+    margin-top: 30px; }
   h1 {
     line-height: 18px;
     padding-left: 0; }
@@ -1430,7 +1431,11 @@ header {
       padding: 5px 0 0; }
     header .link {
       margin-left: 0;
-      margin-top: 5px; }
+      margin-top: 5px; } }
+
+@media only screen and (max-width: 767px) {
+  body {
+    overflow: auto; }
   .content {
     flex-flow: column; }
     .content .content-left,
@@ -1438,14 +1443,16 @@ header {
       width: 100%; }
   .description {
     color: #000;
+    padding-bottom: 0;
     position: relative;
     width: 100%; }
   .toggle {
     display: block; }
   .panel .panel-inner {
     padding: 10px; }
-  .num {
-    font-size: 42px; }
+  #reset {
+    right: 10px;
+    top: 20px; }
   #map .map-legend {
     left: 10px;
     top: 10px; }
@@ -1459,4 +1466,6 @@ header {
       width: 30px !important; }
       #map .zoom-controls button#zoom_in {
         border-bottom: 1px solid #CCC;
-        height: 31px; } }
+        height: 31px; }
+  .timeseries-chart {
+    margin-top: 10px; } }
