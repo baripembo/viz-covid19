@@ -489,7 +489,7 @@ $( document ).ready(function() {
       .attr("height", "100%")
 
     //create log scale for circle markers
-    markerScale = d3.scaleLog()
+    markerScale = d3.scaleSqrt()
       .domain([1, max])
       .range([2, 15]);
         
@@ -637,12 +637,14 @@ $( document ).ready(function() {
     if (!isNaN(transform.k)) {
       g.attr('transform', transform);
       g.attr('stroke-width', 1 / transform.k);
+      var zoomThreshold = (isMobile) ? 1.5 : 1;
 
       mapsvg.selectAll('.continent-label')
-        .style('opacity', function() { return (currentZoom <= 1) ? 1 : 0; });
+        .style('opacity', function() { return (currentZoom <= zoomThreshold) ? 1 : 0; })
+        .style('font-size', function(d) { return 12/transform.k+'px'; });
 
       mapsvg.selectAll('.country-label')
-        .style('opacity', function() { return (currentZoom > 1) ? 1 : 0; })
+        .style('opacity', function() { return (currentZoom > zoomThreshold) ? 1 : 0; })
         .style('font-size', function(d) { return 12/transform.k+'px'; });
 
       //update map markers
