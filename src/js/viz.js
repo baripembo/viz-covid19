@@ -163,8 +163,8 @@ $( document ).ready(function() {
 
     cases.append('text')
       .attr('class', 'label')
-      .attr('transform', 'translate(38,75)')
-      .text(max);
+      .attr('transform', 'translate(30,75)')
+      .text(numFormat(max));
   }
 
   function drawMap(){
@@ -314,7 +314,7 @@ $( document ).ready(function() {
 
     var w = $('.tooltip').outerWidth();
     var h = ($('.tooltip-inner').outerHeight() <= 0) ? 80 : $('.tooltip-inner').outerHeight() + 20;
-    tooltip.select('div').html("<label class='h3 label-header'>" + country_name + "</label>Cases: "+ cases +"<br/>Deaths: "+ deaths +"<br/>");
+    tooltip.select('div').html("<label class='h3 label-header'>" + country_name + "</label>Cases: "+ numFormat(cases) +"<br/>Deaths: "+ numFormat(deaths) +"<br/>");
     tooltip
       .style('height', h + 'px')
       .style('left', (d3.event.pageX - w/2) + 'px')
