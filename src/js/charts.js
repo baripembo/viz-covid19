@@ -94,7 +94,7 @@ function formatTimeseriesData(data) {
           val = e.values[0]['confirmed cases'];
         }
       });
-      if (val!=undefined) arr.push(val);
+      arr.push(val);
     });
     timeseriesArray.push(arr);
   });
