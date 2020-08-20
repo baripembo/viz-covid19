@@ -348,6 +348,14 @@ header {
   stroke: none;
 }
 
+
+@media only screen and (max-width: 1240px) {
+  .num {
+    font-size: 32px;
+  }
+}
+
+
 @media only screen and (max-width: 1000px) {
   .num {
     font-size: 28px;
