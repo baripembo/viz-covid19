@@ -5,7 +5,7 @@ function initBarCharts(data) {
 	var groupByIndicator = d3.nest()
     .key(function(d){ return d['Indicator']; })
     .key(function(d) { 
-    	countries.add(d['Country']);
+    	countries.add(d['#country+name']);
     	return d['ISO3']; 
     })
     .entries(data);
@@ -63,42 +63,65 @@ function initTimeseries(data) {
 }
 
 function formatTimeseriesData(data) {
-  //group the data by country
-  var groupByCountry = d3.nest()
-    .key(function(d){ return d['Country']; })
-    .key(function(d) { return d['Date']; })
-    .entries(data);
-  groupByCountry.sort(compare);
+  console.log(data)
+  // //group the data by country
+  // var groupByCountry = d3.nest()
+  //   .key(function(d){ return d['#country+name']; })
+  //   .key(function(d) { return d['Date']; })
+  //   .entries(data);
+  // groupByCountry.sort(compare);
 
-  //group the data by date
-  var groupByDate = d3.nest()
-    .key(function(d){ return d['Date']; })
-    .entries(data);
+  // //group the data by date
+  // var groupByDate = d3.nest()
+  //   .key(function(d){ return d['Date']; })
+  //   .entries(data);
+
+  // var dateArray = ['x'];
+  // groupByDate.forEach(function(d) {
+  //   var date = new Date(d.key);
+  //   var utcDate = new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
+  //   dateArray.push(utcDate);
+  // });
+
+  // var timeseriesArray = [];
+  // timeseriesArray.push(dateArray);
+
+  // groupByCountry.forEach(function(country, index) {
+  //   var arr = [country.key];
+  //   var val = 0;
+  //   groupByDate.forEach(function(d) {
+  //     country.values.forEach(function(e) {
+  //       if (d.key == e.key) {
+  //         val = e.values[0]['#affected+infected'];
+  //       }
+  //     });
+  //    if (val!=undefined) arr.push(val);
+  //   });
+  //   timeseriesArray.push(arr);
+  // });
+
+  var dateSet = new Set();
+  var timeseriesArray = [];
+  var dataArray = Object.entries(data);
+  dataArray.forEach(function(d) {
+    var countryArray = [];
+    countryArray.push(d[0])
+    var valueArray = d[1];
+    valueArray.forEach(function(val) {
+      dateSet.add(val['#date+reported']);
+      countryArray.push(val['#affected+infected'])
+    });
+    timeseriesArray.push(countryArray);
+  });
 
   var dateArray = ['x'];
-  groupByDate.forEach(function(d) {
-    var date = new Date(d.key);
+  dateSet.forEach(function(d) {
+    var date = new Date(d);
     var utcDate = new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
     dateArray.push(utcDate);
   });
 
-  var timeseriesArray = [];
-  timeseriesArray.push(dateArray);
-
-  groupByCountry.forEach(function(country, index) {
-    var arr = [country.key];
-    var val = 0;
-    groupByDate.forEach(function(d) {
-      country.values.forEach(function(e) {
-        if (d.key == e.key) {
-          val = e.values[0]['confirmed cases'];
-        }
-      });
-      arr.push(val);
-    });
-    timeseriesArray.push(arr);
-  });
-
+  timeseriesArray.unshift(dateArray)
   return timeseriesArray;
 }
 
@@ -142,7 +165,8 @@ function createTimeSeries(array) {
 				min: 0,
 				padding: { top:0, bottom:0 },
         tick: { 
-          outer: false
+          outer: false,
+          format: d3.format(".2s")
         }
 			}
 		},
@@ -192,7 +216,10 @@ function createTimeseriesLegend() {
 }
 
 function updateTimeseries(data, selected) {
-  var updatedData = (selected != undefined) ? data.filter((country) => selected.includes(country['Country Code'])) : data;
+  var updatedData = {};
+  selected.forEach(function(country) {
+    updatedData[country] = data[country];
+  });
   var timeseriesArray = formatTimeseriesData(updatedData);
 
   //load new data
