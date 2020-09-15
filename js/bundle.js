@@ -6,7 +6,7 @@ function initBarCharts(data) {
 	var groupByIndicator = d3.nest()
     .key(function(d){ return d['Indicator']; })
     .key(function(d) { 
-    	countries.add(d['Country']);
+    	countries.add(d['#country+name']);
     	return d['ISO3']; 
     })
     .entries(data);
@@ -64,42 +64,65 @@ function initTimeseries(data) {
 }
 
 function formatTimeseriesData(data) {
-  //group the data by country
-  var groupByCountry = d3.nest()
-    .key(function(d){ return d['Country']; })
-    .key(function(d) { return d['Date']; })
-    .entries(data);
-  groupByCountry.sort(compare);
+  console.log(data)
+  // //group the data by country
+  // var groupByCountry = d3.nest()
+  //   .key(function(d){ return d['#country+name']; })
+  //   .key(function(d) { return d['Date']; })
+  //   .entries(data);
+  // groupByCountry.sort(compare);
 
-  //group the data by date
-  var groupByDate = d3.nest()
-    .key(function(d){ return d['Date']; })
-    .entries(data);
+  // //group the data by date
+  // var groupByDate = d3.nest()
+  //   .key(function(d){ return d['Date']; })
+  //   .entries(data);
+
+  // var dateArray = ['x'];
+  // groupByDate.forEach(function(d) {
+  //   var date = new Date(d.key);
+  //   var utcDate = new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
+  //   dateArray.push(utcDate);
+  // });
+
+  // var timeseriesArray = [];
+  // timeseriesArray.push(dateArray);
+
+  // groupByCountry.forEach(function(country, index) {
+  //   var arr = [country.key];
+  //   var val = 0;
+  //   groupByDate.forEach(function(d) {
+  //     country.values.forEach(function(e) {
+  //       if (d.key == e.key) {
+  //         val = e.values[0]['#affected+infected'];
+  //       }
+  //     });
+  //    if (val!=undefined) arr.push(val);
+  //   });
+  //   timeseriesArray.push(arr);
+  // });
+
+  var dateSet = new Set();
+  var timeseriesArray = [];
+  var dataArray = Object.entries(data);
+  dataArray.forEach(function(d) {
+    var countryArray = [];
+    countryArray.push(d[0])
+    var valueArray = d[1];
+    valueArray.forEach(function(val) {
+      dateSet.add(val['#date+reported']);
+      countryArray.push(val['#affected+infected'])
+    });
+    timeseriesArray.push(countryArray);
+  });
 
   var dateArray = ['x'];
-  groupByDate.forEach(function(d) {
-    var date = new Date(d.key);
+  dateSet.forEach(function(d) {
+    var date = new Date(d);
     var utcDate = new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
     dateArray.push(utcDate);
   });
 
-  var timeseriesArray = [];
-  timeseriesArray.push(dateArray);
-
-  groupByCountry.forEach(function(country, index) {
-    var arr = [country.key];
-    var val = 0;
-    groupByDate.forEach(function(d) {
-      country.values.forEach(function(e) {
-        if (d.key == e.key) {
-          val = e.values[0]['confirmed cases'];
-        }
-      });
-      arr.push(val);
-    });
-    timeseriesArray.push(arr);
-  });
-
+  timeseriesArray.unshift(dateArray)
   return timeseriesArray;
 }
 
@@ -143,7 +166,8 @@ function createTimeSeries(array) {
 				min: 0,
 				padding: { top:0, bottom:0 },
         tick: { 
-          outer: false
+          outer: false,
+          format: d3.format(".2s")
         }
 			}
 		},
@@ -193,7 +217,10 @@ function createTimeseriesLegend() {
 }
 
 function updateTimeseries(data, selected) {
-  var updatedData = (selected != undefined) ? data.filter((country) => selected.includes(country['Country Code'])) : data;
+  var updatedData = {};
+  selected.forEach(function(country) {
+    updatedData[country] = data[country];
+  });
   var timeseriesArray = formatTimeseriesData(updatedData);
 
   //load new data
@@ -207,34 +234,6 @@ function updateTimeseries(data, selected) {
   });
 }
 
-
-function hxlProxyToJSON(input){
-    var output = [];
-    var keys=[]
-    input.forEach(function(e,i){
-        if(i==0){
-            e.forEach(function(e2,i2){
-                var parts = e2.split('+');
-                var key = parts[0]
-                if(parts.length>1){
-                    var atts = parts.splice(1,parts.length);
-                    atts.sort();                    
-                    atts.forEach(function(att){
-                        key +='+'+att
-                    });
-                }
-                keys.push(key);
-            });
-        } else {
-            var row = {};
-            e.forEach(function(e2,i2){
-                row[keys[i2]] = e2;
-            });
-            output.push(row);
-        }
-    });
-    return output;
-}
 
 function getMonth(m) {
     var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -287,10 +286,9 @@ function truncateString(str, num) {
 $( document ).ready(function() {
   var isMobile = window.innerWidth<768? true : false;
   var geomPath = 'data/worldmap.json';
-  var continentsPath = 'data/continents.json';
-  var timeseriesPath = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS23DBKc8c39Aq55zekL0GCu4I6IVnK4axkd05N6jUBmeJe9wA69s3CmMUiIvAmPdGtZPBd-cLS9YwS/pub?gid=1253093254&single=true&output=csv';
-  var cumulativePath = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS23DBKc8c39Aq55zekL0GCu4I6IVnK4axkd05N6jUBmeJe9wA69s3CmMUiIvAmPdGtZPBd-cLS9YwS/pub?gid=195339920&single=true&output=csv';
-  var geomData, geomFilteredData, continentsData, globalData, cumulativeData, timeseriesData, date, totalCases, totalDeaths, descriptionText = '';
+  var timeseriesPath = 'https://proxy.hxlstandard.org/api/data-preview.csv?url=https%3A%2F%2Fdocs.google.com%2Fspreadsheets%2Fd%2Fe%2F2PACX-1vS23DBKc8c39Aq55zekL0GCu4I6IVnK4axkd05N6jUBmeJe9wA69s3CmMUiIvAmPdGtZPBd-cLS9YwS%2Fpub%3Fgid%3D1253093254%26single%3Dtrue%26output%3Dcsv';
+  //var cumulativePath = 'https://proxy.hxlstandard.org/api/data-preview.csv?url=https%3A%2F%2Fdocs.google.com%2Fspreadsheets%2Fd%2Fe%2F2PACX-1vS23DBKc8c39Aq55zekL0GCu4I6IVnK4axkd05N6jUBmeJe9wA69s3CmMUiIvAmPdGtZPBd-cLS9YwS%2Fpub%3Fgid%3D195339920%26single%3Dtrue%26output%3Dcsv';
+  var geomData, geomFilteredData, globalData, cumulativeData, timeseriesData, date, totalCases, totalDeaths, descriptionText = '';
   var countryCodeList = [];
   var selectedCountries = [];
   var numFormat = d3.format(",");
@@ -303,28 +301,25 @@ $( document ).ready(function() {
   function getData() {
     Promise.all([
       d3.json(geomPath),
-      d3.json(continentsPath),
-      d3.csv(cumulativePath),
-      d3.csv(timeseriesPath)
+      d3.json('https://raw.githubusercontent.com/OCHA-DAP/hdx-scraper-covid-viz/covid_series/out_covidseries.json'),
+      // d3.csv(cumulativePath),
+      //d3.csv(timeseriesPath)
     ]).then(function(data){
       //parse data
       geomData = topojson.feature(data[0], data[0].objects.geom);
-      data[2].forEach(function(item) {
-        if (item.Country == 'Occupied Palestinian Territory') item.Country = 'occupied Palestinian territory';
-      });
-
-      continentsData = data[1];
-      cumulativeData = data[2];
-      timeseriesData = data[3];
+      cumulativeData = data[1].cumulative;
+      timeseriesData = data[1].timeseries;
+      //console.log(timeseriesData)
 
       //get list of priority countries
       cumulativeData.forEach(function(item, index) {
-        if (item['Country'] != 'Global') {
-          countryCodeList.push(item['Country Code']);
+        if (item['#country+name'] != 'Global') {
+          countryCodeList.push(item['#country+code']);
         }
         else {
           //extract global data
           globalData = item;
+          console.log('globalData', globalData)
           cumulativeData.splice(index, 1);
         }
       });
@@ -333,13 +328,14 @@ $( document ).ready(function() {
       geomFilteredData = geomData.features.filter((country) => countryCodeList.includes(country.properties.ISO_A3));
     
       //get most recent date from timeseries data
-      var lastUpdated = new Date(Math.max.apply(null, timeseriesData.map(function(e) {
-        return new Date(e.Date);
-      })));
+      console.log('--',Object.entries(timeseriesData))
+      // var lastUpdated = new Date(Math.max.apply(null, timeseriesData.map(function(e) {
+      //   return new Date(e.Date);
+      // })));
 
-      //set last updated date
-      date = getMonth(lastUpdated.getUTCMonth()) + ' ' + lastUpdated.getUTCDate() + ', ' + lastUpdated.getFullYear();
-      $('.date span').html(date);
+      // //set last updated date
+      // date = getMonth(lastUpdated.getUTCMonth()) + ' ' + lastUpdated.getUTCDate() + ', ' + lastUpdated.getFullYear();
+      // $('.date span').html(date);
 
       //create page link
       var embed = { text: 'See COVID-19 Pandemic page', link: 'https://data.humdata.org/event/covid-19' };
@@ -387,24 +383,24 @@ $( document ).ready(function() {
       });
     }
 
-    $('.stats-global').html('<h4>Global Figures: ' + numFormat(globalData['confirmed cases']) + ' total confirmed cases, ' + numFormat(globalData['deaths']) + ' total confirmed deaths</h4>');
+    //$('.stats-global').html('<h4>Global Figures: ' + numFormat(globalData['#affected+infected']) + ' total confirmed cases, ' + numFormat(globalData['#affected+killed']) + ' total confirmed deaths</h4>');
 
-    totalCases = d3.sum(cumulativeData, function(d) { return d['confirmed cases']; });
-    totalDeaths = d3.sum(cumulativeData, function(d) { return d['deaths']; });
-    createKeyFigure('.stats-priority', 'Total Confirmed Cases', 'cases', totalCases);
-    createKeyFigure('.stats-priority', 'Total Confirmed Deaths', 'deaths', totalDeaths);
+    totalCases = d3.sum(cumulativeData, function(d) { return d['#affected+infected']; });
+    totalDeaths = d3.sum(cumulativeData, function(d) { return d['#affected+killed']; });
+    createKeyFigure('.stats-priority', 'Total Confirmed Cases', 'cases', numFormat(totalCases));
+    createKeyFigure('.stats-priority', 'Total Confirmed Deaths', 'deaths', numFormat(totalDeaths));
     createKeyFigure('.stats-priority', 'Total Locations', 'locations', cumulativeData.length);
   }
 
   function updatePanel(selected) {
-    var updatedData = cumulativeData.filter((country) => selected.includes(country['Country Code']));
-    var cases = d3.sum(updatedData, function(d) { return +d['confirmed cases']; } );
-    var deaths = d3.sum(updatedData, function(d) { return +d['deaths']; } );
+    var updatedData = cumulativeData.filter((country) => selected.includes(country['#country+code']));
+    var cases = d3.sum(updatedData, function(d) { return +d['#affected+infected']; } );
+    var deaths = d3.sum(updatedData, function(d) { return +d['#affected+killed']; } );
     var locations = updatedData.length;
 
     if (updatedData.length > 0) {
-      $('.key-figure').find('.cases').html(cases);
-      $('.key-figure').find('.deaths').html(deaths);
+      $('.key-figure').find('.cases').html(numFormat(cases));
+      $('.key-figure').find('.deaths').html(numFormat(deaths));
       $('.key-figure').find('.locations').html(locations);
     }
   }
@@ -425,7 +421,7 @@ $( document ).ready(function() {
   }
 
   function createMapLegend() {
-    var max = d3.max(cumulativeData, function(d) { return +d['confirmed cases']; })
+    var max = d3.max(cumulativeData, function(d) { return +d['#affected+infected']; })
 
     var cases = d3.select('.legend-inner').append('svg')
       .attr('width', 95)
@@ -454,8 +450,8 @@ $( document ).ready(function() {
 
     cases.append('text')
       .attr('class', 'label')
-      .attr('transform', 'translate(38,75)')
-      .text(max);
+      .attr('transform', 'translate(30,75)')
+      .text(numFormat(max));
   }
 
   function drawMap(){
@@ -464,7 +460,7 @@ $( document ).ready(function() {
     var mapScale = (isMobile) ? width/3.5 : width/5.5;
     var mapCenter = (isMobile) ? [10, 30] : [75, 8];
 
-    var max = d3.max(cumulativeData, function(d) { return +d['confirmed cases']; } );
+    var max = d3.max(cumulativeData, function(d) { return +d['#affected+infected']; } );
 
     var projection = d3.geoMercator()
       .center(mapCenter)
@@ -520,6 +516,19 @@ $( document ).ready(function() {
           selectCountry(d);
       });
 
+    //country labels
+    var label = g.selectAll(".country-label")
+      .data(geomFilteredData)
+      .enter().append("text")
+        .attr("class", "country-label")
+        .attr("transform", function(d) { return "translate(" + path.centroid(d) + ")"; })
+        .attr("dy", function() {
+          var dy = (isMobile) ? 0 : '1em';
+          return dy;
+        })
+        .text(function(d) { return d.properties.NAME_LONG; })
+        .call(wrap, 100);
+
     //create count markers
     var countMarker = g.append("g")
       .attr("class", "count-layer")
@@ -533,8 +542,8 @@ $( document ).ready(function() {
           return d.properties.ISO_A3;
         })
         .attr("r", function (d){ 
-          var country = cumulativeData.filter(country => country['Country Code'] == d.properties.ISO_A3);
-          return markerScale(+country[0]['confirmed cases']); 
+          var country = cumulativeData.filter(country => country['#country+code'] == d.properties.ISO_A3);
+          return markerScale(+country[0]['#affected+infected']); 
         })
         .attr("transform", function(d){ return "translate(" + path.centroid(d) + ")"; })
         .on("mouseover", function(){ tooltip.style("opacity", 1); })
@@ -545,35 +554,6 @@ $( document ).ready(function() {
         .on("click", function(d) {
           selectCountry(d);
         });
-
-    
-    //continent labels
-    var continentLabel = g.selectAll(".continent-label")
-      .data(continentsData.features)
-      .enter().append("text")
-        .attr("class", "continent-label")
-        .style('opacity', 1)
-        .attr("transform", function(d) { return "translate(" + path.centroid(d) + ")"; })
-        .attr("dy", function() {
-          var dy = (isMobile) ? 0 : '1em';
-          return dy;
-        })
-        .text(function(d) { return d.properties.CONTINENT; })
-        .call(wrap, 100);
-
-    //country labels
-    var label = g.selectAll(".country-label")
-      .data(geomFilteredData)
-      .enter().append("text")
-        .attr("class", "country-label")
-        .style('opacity', 0)
-        .attr("transform", function(d) { return "translate(" + path.centroid(d) + ")"; })
-        .attr("dy", function() {
-          var dy = (isMobile) ? 0 : '1em';
-          return dy;
-        })
-        .text(function(d) { return d.properties.NAME_LONG; })
-        .call(wrap, 100);
 
     //tooltip
     mapTooltip = mapsvg.append("g")
@@ -589,19 +569,21 @@ $( document ).ready(function() {
   }
 
   function selectCountry(d) {
+    console.log('selectCountry', d)
     //update marker selection
     var marker = d3.select('.count-layer').select('#'+d.properties.ISO_A3);
     if (marker.classed('selected')) {
       marker.classed('selected', false);
 
-      const index = selectedCountries.indexOf(d.properties.ISO_A3);
+      const index = selectedCountries.indexOf(d.properties.NAME);
       if (index > -1) {
         selectedCountries.splice(index, 1);
       }
     }
     else {
       marker.classed('selected', true);
-      selectedCountries.push(d.properties.ISO_A3);
+      selectedCountries.push(d.properties.NAME);
+      //selectedCountries.push(d.properties.ISO_A3);
     }
 
     //update panel
@@ -615,13 +597,13 @@ $( document ).ready(function() {
   }
 
   function createMapTooltip(country_code, country_name){
-    var country = cumulativeData.filter(c => c['Country Code'] == country_code);
-    var cases = (country[0] != undefined) ? country[0]['confirmed cases'] : -1;
-    var deaths = (country[0] != undefined) ? country[0]['deaths'] : -1;
+    var country = cumulativeData.filter(c => c['#country+code'] == country_code);
+    var cases = (country[0] != undefined) ? country[0]['#affected+infected'] : -1;
+    var deaths = (country[0] != undefined) ? country[0]['#affected+killed'] : -1;
 
     var w = $('.tooltip').outerWidth();
     var h = ($('.tooltip-inner').outerHeight() <= 0) ? 80 : $('.tooltip-inner').outerHeight() + 20;
-    tooltip.select('div').html("<label class='h3 label-header'>" + country_name + "</label>Cases: "+ cases +"<br/>Deaths: "+ deaths +"<br/>");
+    tooltip.select('div').html("<label class='h3 label-header'>" + country_name + "</label>Cases: "+ numFormat(cases) +"<br/>Deaths: "+ numFormat(deaths) +"<br/>");
     tooltip
       .style('height', h + 'px')
       .style('left', (d3.event.pageX - w/2) + 'px')
@@ -637,22 +619,16 @@ $( document ).ready(function() {
     if (!isNaN(transform.k)) {
       g.attr('transform', transform);
       g.attr('stroke-width', 1 / transform.k);
-      var zoomThreshold = (isMobile) ? 1.5 : 1;
-
-      mapsvg.selectAll('.continent-label')
-        .style('opacity', function() { return (currentZoom <= zoomThreshold) ? 1 : 0; })
-        .style('font-size', function(d) { return 12/transform.k+'px'; });
 
       mapsvg.selectAll('.country-label')
-        .style('opacity', function() { return (currentZoom > zoomThreshold) ? 1 : 0; })
         .style('font-size', function(d) { return 12/transform.k+'px'; });
 
       //update map markers
       mapsvg.selectAll('circle').each(function(m){
         var marker = d3.select(this);
         cumulativeData.forEach(function(d){
-          if (m.properties.ISO_A3 == d['Country Code']) {
-            var r = markerScale(d['confirmed cases']);
+          if (m.properties.ISO_A3 == d['#country+code']) {
+            var r = markerScale(d['#affected+infected']);
             marker.transition().duration(500).attr('r', function (d) { 
               return (r/currentZoom);
             });
