@@ -58,48 +58,11 @@ function createBarChart(name, countries, values) {
 
 
 function initTimeseries(data) {
-  var timeseriesArray = formatTimeseriesData(data);
-  createTimeSeries(timeseriesArray);
+  allTimeseriesArray = formatTimeseriesData(data);
+  createTimeSeries(allTimeseriesArray);
 }
 
 function formatTimeseriesData(data) {
-  console.log(data)
-  // //group the data by country
-  // var groupByCountry = d3.nest()
-  //   .key(function(d){ return d['#country+name']; })
-  //   .key(function(d) { return d['Date']; })
-  //   .entries(data);
-  // groupByCountry.sort(compare);
-
-  // //group the data by date
-  // var groupByDate = d3.nest()
-  //   .key(function(d){ return d['Date']; })
-  //   .entries(data);
-
-  // var dateArray = ['x'];
-  // groupByDate.forEach(function(d) {
-  //   var date = new Date(d.key);
-  //   var utcDate = new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
-  //   dateArray.push(utcDate);
-  // });
-
-  // var timeseriesArray = [];
-  // timeseriesArray.push(dateArray);
-
-  // groupByCountry.forEach(function(country, index) {
-  //   var arr = [country.key];
-  //   var val = 0;
-  //   groupByDate.forEach(function(d) {
-  //     country.values.forEach(function(e) {
-  //       if (d.key == e.key) {
-  //         val = e.values[0]['#affected+infected'];
-  //       }
-  //     });
-  //    if (val!=undefined) arr.push(val);
-  //   });
-  //   timeseriesArray.push(arr);
-  // });
-
   var dateSet = new Set();
   var timeseriesArray = [];
   var dataArray = Object.entries(data);
@@ -107,21 +70,30 @@ function formatTimeseriesData(data) {
     var countryArray = [];
     countryArray.push(d[0])
     var valueArray = d[1];
-    valueArray.forEach(function(val) {
-      dateSet.add(val['#date+reported']);
-      countryArray.push(val['#affected+infected'])
-    });
+    if (valueArray!=undefined) {
+      valueArray.forEach(function(val) {
+        dateSet.add(val['#date+reported']);
+        countryArray.push(val['#affected+infected'])
+      });
+    }
     timeseriesArray.push(countryArray);
   });
 
-  var dateArray = ['x'];
+  var dateArray = [];
   dateSet.forEach(function(d) {
     var date = new Date(d);
     var utcDate = new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
     dateArray.push(utcDate);
   });
+  
+  //set last updated date
+  var lastUpdated = d3.max(dateArray);
+  var date = getMonth(lastUpdated.getUTCMonth()) + ' ' + lastUpdated.getUTCDate() + ', ' + lastUpdated.getFullYear();
+  $('.date span').html(date);
 
-  timeseriesArray.unshift(dateArray)
+  dateArray.unshift('x')
+  timeseriesArray.unshift(dateArray);
+
   return timeseriesArray;
 }
 
@@ -217,10 +189,16 @@ function createTimeseriesLegend() {
 
 function updateTimeseries(data, selected) {
   var updatedData = {};
-  selected.forEach(function(country) {
-    updatedData[country] = data[country];
-  });
-  var timeseriesArray = formatTimeseriesData(updatedData);
+  var timeseriesArray = [];
+  if (selected != undefined) {  
+    selected.forEach(function(country) {
+      updatedData[country] = data[country];
+    });
+    timeseriesArray = formatTimeseriesData(updatedData);
+  }
+  else {
+    timeseriesArray = allTimeseriesArray;
+  }
 
   //load new data
   timeseriesChart.load({

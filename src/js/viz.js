@@ -1,9 +1,7 @@
 $( document ).ready(function() {
   var isMobile = window.innerWidth<768? true : false;
   var geomPath = 'data/worldmap.json';
-  var timeseriesPath = 'https://proxy.hxlstandard.org/api/data-preview.csv?url=https%3A%2F%2Fdocs.google.com%2Fspreadsheets%2Fd%2Fe%2F2PACX-1vS23DBKc8c39Aq55zekL0GCu4I6IVnK4axkd05N6jUBmeJe9wA69s3CmMUiIvAmPdGtZPBd-cLS9YwS%2Fpub%3Fgid%3D1253093254%26single%3Dtrue%26output%3Dcsv';
-  //var cumulativePath = 'https://proxy.hxlstandard.org/api/data-preview.csv?url=https%3A%2F%2Fdocs.google.com%2Fspreadsheets%2Fd%2Fe%2F2PACX-1vS23DBKc8c39Aq55zekL0GCu4I6IVnK4axkd05N6jUBmeJe9wA69s3CmMUiIvAmPdGtZPBd-cLS9YwS%2Fpub%3Fgid%3D195339920%26single%3Dtrue%26output%3Dcsv';
-  var geomData, geomFilteredData, globalData, cumulativeData, timeseriesData, date, totalCases, totalDeaths, descriptionText = '';
+  var geomData, geomFilteredData, globalData, cumulativeData, timeseriesData, allTimeseriesArray, date, totalCases, totalDeaths, descriptionText = '';
   var countryCodeList = [];
   var selectedCountries = [];
   var numFormat = d3.format(",");
@@ -16,15 +14,12 @@ $( document ).ready(function() {
   function getData() {
     Promise.all([
       d3.json(geomPath),
-      d3.json('https://raw.githubusercontent.com/OCHA-DAP/hdx-scraper-covid-viz/covid_series/out_covidseries.json'),
-      // d3.csv(cumulativePath),
-      //d3.csv(timeseriesPath)
+      d3.json('https://raw.githubusercontent.com/OCHA-DAP/hdx-scraper-covid-viz/covid_series/out_covidseries.json')
     ]).then(function(data){
       //parse data
       geomData = topojson.feature(data[0], data[0].objects.geom);
       cumulativeData = data[1].cumulative;
       timeseriesData = data[1].timeseries;
-      //console.log(timeseriesData)
 
       //get list of priority countries
       cumulativeData.forEach(function(item, index) {
@@ -34,23 +29,12 @@ $( document ).ready(function() {
         else {
           //extract global data
           globalData = item;
-          console.log('globalData', globalData)
           cumulativeData.splice(index, 1);
         }
       });
 
       //filter for priority countries
       geomFilteredData = geomData.features.filter((country) => countryCodeList.includes(country.properties.ISO_A3));
-    
-      //get most recent date from timeseries data
-      console.log('--',Object.entries(timeseriesData))
-      // var lastUpdated = new Date(Math.max.apply(null, timeseriesData.map(function(e) {
-      //   return new Date(e.Date);
-      // })));
-
-      // //set last updated date
-      // date = getMonth(lastUpdated.getUTCMonth()) + ' ' + lastUpdated.getUTCDate() + ', ' + lastUpdated.getFullYear();
-      // $('.date span').html(date);
 
       //create page link
       var embed = { text: 'See COVID-19 Pandemic page', link: 'https://data.humdata.org/event/covid-19' };
@@ -108,7 +92,7 @@ $( document ).ready(function() {
   }
 
   function updatePanel(selected) {
-    var updatedData = cumulativeData.filter((country) => selected.includes(country['#country+code']));
+    var updatedData = cumulativeData.filter((country) => selected.includes(country['#country+name']));
     var cases = d3.sum(updatedData, function(d) { return +d['#affected+infected']; } );
     var deaths = d3.sum(updatedData, function(d) { return +d['#affected+killed']; } );
     var locations = updatedData.length;
@@ -284,21 +268,19 @@ $( document ).ready(function() {
   }
 
   function selectCountry(d) {
-    console.log('selectCountry', d)
     //update marker selection
     var marker = d3.select('.count-layer').select('#'+d.properties.ISO_A3);
     if (marker.classed('selected')) {
       marker.classed('selected', false);
 
-      const index = selectedCountries.indexOf(d.properties.NAME);
+      const index = selectedCountries.indexOf(d.properties.NAME_LONG);
       if (index > -1) {
         selectedCountries.splice(index, 1);
       }
     }
     else {
       marker.classed('selected', true);
-      selectedCountries.push(d.properties.NAME);
-      //selectedCountries.push(d.properties.ISO_A3);
+      selectedCountries.push(d.properties.NAME_LONG);
     }
 
     //update panel
@@ -361,11 +343,11 @@ $( document ).ready(function() {
   function resetViz() {
     selectedCountries = [];
     $('.panel').find('h2 span').html('');
-    $('.key-figure').find('.cases').html(totalCases);
-    $('.key-figure').find('.deaths').html(totalDeaths);
+    $('.key-figure').find('.cases').html(numFormat(totalCases));
+    $('.key-figure').find('.deaths').html(numFormat(totalDeaths));
     $('.key-figure').find('.locations').html(cumulativeData.length);
     
-    updateTimeseries(timeseriesData);
+    updateTimeseries();
 
     $('.count-marker').removeClass('selected');
   }
