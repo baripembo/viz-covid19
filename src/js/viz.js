@@ -21,8 +21,6 @@ $( document ).ready(function() {
       cumulativeData = data[1].cumulative;
       timeseriesData = data[1].timeseries;
 
-      console.log(timeseriesData)
-
       //get list of priority countries
       cumulativeData.forEach(function(item, index) {
         if (item['#country+code'] != 'hrp_iso3s') {

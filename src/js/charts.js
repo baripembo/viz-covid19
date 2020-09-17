@@ -63,32 +63,27 @@ function initTimeseries(data) {
 }
 
 function formatTimeseriesData(data) {
-
-  var array = [];
-
-
-  //var dateSet = new Set();
-  var timeseriesArray = [];
+  var formattedData = [];
   var dataArray = Object.entries(data);
-
   dataArray.forEach(function(d) {
     d[1].forEach(function(row) {
       row['#country+name'] = d[0];
-      array.push(row)
+      formattedData.push(row)
     });
   });
+  formattedData.reverse();
 
   //group the data by country
   var groupByCountry = d3.nest()
     .key(function(d){ return d['#country+name']; })
     .key(function(d) { return d['#date+reported']; })
-    .entries(array);
+    .entries(formattedData);
   groupByCountry.sort(compare);
 
   //group the data by date
   var groupByDate = d3.nest()
     .key(function(d){ return d['#date+reported']; })
-    .entries(array);
+    .entries(formattedData);
 
   var dateArray = [];
   groupByDate.forEach(function(d) {
@@ -97,9 +92,9 @@ function formatTimeseriesData(data) {
     dateArray.push(utcDate);
   });
 
+  //format for c3 chart
   var timeseriesArray = [];
   timeseriesArray.push(dateArray);
-
   groupByCountry.forEach(function(country, index) {
     var arr = [country.key];
     var val = 0;
@@ -122,41 +117,7 @@ function formatTimeseriesData(data) {
   }
 
   dateArray.unshift('x')
-  console.log(timeseriesArray)
   return timeseriesArray;
-
-
-  //console.log(dataArray)
-  // dataArray.forEach(function(d) {
-  //   var countryArray = [];
-  //   countryArray.push(d[0])
-  //   var valueArray = d[1];
-  //   if (valueArray!=undefined) {
-  //     valueArray.forEach(function(val) {
-  //       dateSet.add(val['#date+reported']);
-  //       countryArray.push(val['#affected+infected'])
-  //     });
-  //   }
-  //   timeseriesArray.push(countryArray);
-  // });
-
-  // var dateArray = [];
-  // dateSet.forEach(function(d) {
-  //   var date = new Date(d);
-  //   var utcDate = new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
-  //   dateArray.push(utcDate);
-  // });
-  
-  // //set last updated date
-  // console.log($('.date span').html())
-  // var lastUpdated = d3.max(dateArray);
-  // var date = getMonth(lastUpdated.getUTCMonth()) + ' ' + lastUpdated.getUTCDate() + ', ' + lastUpdated.getFullYear();
-  // $('.date span').html(date);
-
-  // dateArray.unshift('x')
-  // timeseriesArray.unshift(dateArray);
-
-  // return timeseriesArray;
 }
 
 var timeseriesChart;
@@ -263,8 +224,6 @@ function updateTimeseries(data, selected) {
   }
 
   //load new data
-  console.log('---')
-  console.log(timeseriesArray)
   timeseriesChart.load({
     columns: timeseriesArray,
     unload: true,
