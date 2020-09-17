@@ -63,38 +63,100 @@ function initTimeseries(data) {
 }
 
 function formatTimeseriesData(data) {
-  var dateSet = new Set();
+
+  var array = [];
+
+
+  //var dateSet = new Set();
   var timeseriesArray = [];
   var dataArray = Object.entries(data);
+
   dataArray.forEach(function(d) {
-    var countryArray = [];
-    countryArray.push(d[0])
-    var valueArray = d[1];
-    if (valueArray!=undefined) {
-      valueArray.forEach(function(val) {
-        dateSet.add(val['#date+reported']);
-        countryArray.push(val['#affected+infected'])
-      });
-    }
-    timeseriesArray.push(countryArray);
+    d[1].forEach(function(row) {
+      row['#country+name'] = d[0];
+      array.push(row)
+    });
   });
 
+  //group the data by country
+  var groupByCountry = d3.nest()
+    .key(function(d){ return d['#country+name']; })
+    .key(function(d) { return d['#date+reported']; })
+    .entries(array);
+  groupByCountry.sort(compare);
+
+  //group the data by date
+  var groupByDate = d3.nest()
+    .key(function(d){ return d['#date+reported']; })
+    .entries(array);
+
   var dateArray = [];
-  dateSet.forEach(function(d) {
-    var date = new Date(d);
+  groupByDate.forEach(function(d) {
+    var date = new Date(d.key);
     var utcDate = new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
     dateArray.push(utcDate);
   });
-  
+
+  var timeseriesArray = [];
+  timeseriesArray.push(dateArray);
+
+  groupByCountry.forEach(function(country, index) {
+    var arr = [country.key];
+    var val = 0;
+    groupByDate.forEach(function(d) {
+      country.values.forEach(function(e) {
+        if (d.key == e.key) {
+          val = e.values[0]['#affected+infected'];
+        }
+      });
+     if (val!=undefined) arr.push(val);
+    });
+    timeseriesArray.push(arr);
+  });
+
   //set last updated date
-  var lastUpdated = d3.max(dateArray);
-  var date = getMonth(lastUpdated.getUTCMonth()) + ' ' + lastUpdated.getUTCDate() + ', ' + lastUpdated.getFullYear();
-  $('.date span').html(date);
+  if ($('.date span').html()=='') {
+    var lastUpdated = d3.max(dateArray);
+    var date = getMonth(lastUpdated.getUTCMonth()) + ' ' + lastUpdated.getUTCDate() + ', ' + lastUpdated.getFullYear();
+    $('.date span').html(date);
+  }
 
   dateArray.unshift('x')
-  timeseriesArray.unshift(dateArray);
-
+  console.log(timeseriesArray)
   return timeseriesArray;
+
+
+  //console.log(dataArray)
+  // dataArray.forEach(function(d) {
+  //   var countryArray = [];
+  //   countryArray.push(d[0])
+  //   var valueArray = d[1];
+  //   if (valueArray!=undefined) {
+  //     valueArray.forEach(function(val) {
+  //       dateSet.add(val['#date+reported']);
+  //       countryArray.push(val['#affected+infected'])
+  //     });
+  //   }
+  //   timeseriesArray.push(countryArray);
+  // });
+
+  // var dateArray = [];
+  // dateSet.forEach(function(d) {
+  //   var date = new Date(d);
+  //   var utcDate = new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
+  //   dateArray.push(utcDate);
+  // });
+  
+  // //set last updated date
+  // console.log($('.date span').html())
+  // var lastUpdated = d3.max(dateArray);
+  // var date = getMonth(lastUpdated.getUTCMonth()) + ' ' + lastUpdated.getUTCDate() + ', ' + lastUpdated.getFullYear();
+  // $('.date span').html(date);
+
+  // dateArray.unshift('x')
+  // timeseriesArray.unshift(dateArray);
+
+  // return timeseriesArray;
 }
 
 var timeseriesChart;
@@ -201,6 +263,8 @@ function updateTimeseries(data, selected) {
   }
 
   //load new data
+  console.log('---')
+  console.log(timeseriesArray)
   timeseriesChart.load({
     columns: timeseriesArray,
     unload: true,
