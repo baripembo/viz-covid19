@@ -64,37 +64,60 @@ function initTimeseries(data) {
 }
 
 function formatTimeseriesData(data) {
-  var dateSet = new Set();
-  var timeseriesArray = [];
+  var formattedData = [];
   var dataArray = Object.entries(data);
   dataArray.forEach(function(d) {
-    var countryArray = [];
-    countryArray.push(d[0])
-    var valueArray = d[1];
-    if (valueArray!=undefined) {
-      valueArray.forEach(function(val) {
-        dateSet.add(val['#date+reported']);
-        countryArray.push(val['#affected+infected'])
-      });
-    }
-    timeseriesArray.push(countryArray);
+    d[1].forEach(function(row) {
+      row['#country+name'] = d[0];
+      formattedData.push(row)
+    });
   });
+  formattedData.reverse();
+
+  //group the data by country
+  var groupByCountry = d3.nest()
+    .key(function(d){ return d['#country+name']; })
+    .key(function(d) { return d['#date+reported']; })
+    .entries(formattedData);
+  groupByCountry.sort(compare);
+
+  //group the data by date
+  var groupByDate = d3.nest()
+    .key(function(d){ return d['#date+reported']; })
+    .entries(formattedData);
 
   var dateArray = [];
-  dateSet.forEach(function(d) {
-    var date = new Date(d);
+  groupByDate.forEach(function(d) {
+    var date = new Date(d.key);
     var utcDate = new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
     dateArray.push(utcDate);
   });
-  
+
+  //format for c3 chart
+  var timeseriesArray = [];
+  timeseriesArray.push(dateArray);
+  groupByCountry.forEach(function(country, index) {
+    var arr = [country.key];
+    var val = 0;
+    groupByDate.forEach(function(d) {
+      country.values.forEach(function(e) {
+        if (d.key == e.key) {
+          val = e.values[0]['#affected+infected'];
+        }
+      });
+     if (val!=undefined) arr.push(val);
+    });
+    timeseriesArray.push(arr);
+  });
+
   //set last updated date
-  var lastUpdated = d3.max(dateArray);
-  var date = getMonth(lastUpdated.getUTCMonth()) + ' ' + lastUpdated.getUTCDate() + ', ' + lastUpdated.getFullYear();
-  $('.date span').html(date);
+  if ($('.date span').html()=='') {
+    var lastUpdated = d3.max(dateArray);
+    var date = getMonth(lastUpdated.getUTCMonth()) + ' ' + lastUpdated.getUTCDate() + ', ' + lastUpdated.getFullYear();
+    $('.date span').html(date);
+  }
 
   dateArray.unshift('x')
-  timeseriesArray.unshift(dateArray);
-
   return timeseriesArray;
 }
 
@@ -286,7 +309,7 @@ $( document ).ready(function() {
 
       //get list of priority countries
       cumulativeData.forEach(function(item, index) {
-        if (item['#country+name'] != 'Global') {
+        if (item['#country+code'] != 'hrp_iso3s') {
           countryCodeList.push(item['#country+code']);
         }
         else {
@@ -345,7 +368,7 @@ $( document ).ready(function() {
       });
     }
 
-    //$('.stats-global').html('<h4>Global Figures: ' + numFormat(globalData['#affected+infected']) + ' total confirmed cases, ' + numFormat(globalData['#affected+killed']) + ' total confirmed deaths</h4>');
+    $('.stats-global').html('<h4>Global Figures: ' + numFormat(globalData['#affected+infected']) + ' total confirmed cases, ' + numFormat(globalData['#affected+killed']) + ' total confirmed deaths</h4>');
 
     totalCases = d3.sum(cumulativeData, function(d) { return d['#affected+infected']; });
     totalDeaths = d3.sum(cumulativeData, function(d) { return d['#affected+killed']; });
