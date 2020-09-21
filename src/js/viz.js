@@ -20,17 +20,11 @@ $( document ).ready(function() {
       geomData = topojson.feature(data[0], data[0].objects.geom);
       cumulativeData = data[1].cumulative;
       timeseriesData = data[1].timeseries;
+      globalData = data[1].global[0];
 
       //get list of priority countries
       cumulativeData.forEach(function(item, index) {
-        if (item['#country+code'] != 'hrp_iso3s') {
-          countryCodeList.push(item['#country+code']);
-        }
-        else {
-          //extract global data
-          globalData = item;
-          cumulativeData.splice(index, 1);
-        }
+        countryCodeList.push(item['#country+code']);
       });
 
       //filter for priority countries
@@ -82,7 +76,8 @@ $( document ).ready(function() {
       });
     }
 
-    $('.stats-global').html('<h4>Global Figures: ' + numFormat(globalData['#affected+infected']) + ' total confirmed cases, ' + numFormat(globalData['#affected+killed']) + ' total confirmed deaths</h4>');
+    if (globalData!=undefined)
+      $('.stats-global').html('<h4>Global Figures: ' + numFormat(globalData['#affected+infected']) + ' total confirmed cases, ' + numFormat(globalData['#affected+killed']) + ' total confirmed deaths</h4>');
 
     totalCases = d3.sum(cumulativeData, function(d) { return d['#affected+infected']; });
     totalDeaths = d3.sum(cumulativeData, function(d) { return d['#affected+killed']; });
