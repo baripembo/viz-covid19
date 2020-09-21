@@ -368,7 +368,8 @@ $( document ).ready(function() {
       });
     }
 
-    $('.stats-global').html('<h4>Global Figures: ' + numFormat(globalData['#affected+infected']) + ' total confirmed cases, ' + numFormat(globalData['#affected+killed']) + ' total confirmed deaths</h4>');
+    if (globalData!=undefined)
+      $('.stats-global').html('<h4>Global Figures: ' + numFormat(globalData['#affected+infected']) + ' total confirmed cases, ' + numFormat(globalData['#affected+killed']) + ' total confirmed deaths</h4>');
 
     totalCases = d3.sum(cumulativeData, function(d) { return d['#affected+infected']; });
     totalDeaths = d3.sum(cumulativeData, function(d) { return d['#affected+killed']; });
